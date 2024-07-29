@@ -11,7 +11,7 @@ def inject_custom_css():
 
 
 def navbar_component():
-    with open("src/assets/images/settings.png", "rb") as image_file:
+    with open("src/assets/images/picto reglage sdl.png", "rb") as image_file:
         image_as_base64 = base64.b64encode(image_file.read())
 
     navbar_items = ''

@@ -6,7 +6,7 @@ import json
 db = Database()
 db.setup()
 
-s = Session("sybilleloth@hotmail.fr", "sybille")
+s = Session("sybilleloth@hotmail.fr", "Sybille2024!")
 s.signin()
 
 data = {      

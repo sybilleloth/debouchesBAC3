@@ -17,7 +17,21 @@
    inkscape:version="0.92.4 (5da689c313, 2019-01-14)"
    sodipodi:docname="CODES COULEURS PROJET.svg">
   <defs
-     id="defs2" />
+     id="defs2">
+    <filter
+       inkscape:collect="always"
+       style="color-interpolation-filters:sRGB"
+       id="filter4726"
+       x="-0.872"
+       width="2.744"
+       y="-1.9235294"
+       height="4.8470588">
+      <feGaussianBlur
+         inkscape:collect="always"
+         stdDeviation="63.867188"
+         id="feGaussianBlur4728" />
+    </filter>
+  </defs>
   <sodipodi:namedview
      id="base"
      pagecolor="#ffffff"
@@ -25,9 +39,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="1"
-     inkscape:cx="-385.51526"
-     inkscape:cy="592.83146"
+     inkscape:zoom="1.1156998"
+     inkscape:cx="-192.07024"
+     inkscape:cy="516.43068"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -53,6 +67,20 @@
      inkscape:groupmode="layer"
      id="layer1">
     <rect
+       id="rect10-4-8"
+       width="115.66071"
+       height="86.934525"
+       x="45.086884"
+       y="74.11203"
+       style="fill:#dd6b77;fill-opacity:1;stroke-width:0.26458332" />
+    <rect
+       id="rect10-4"
+       width="115.66071"
+       height="86.934525"
+       x="-30.48982"
+       y="161.09731"
+       style="fill:#ee4c77;fill-opacity:1;stroke-width:0.26458332" />
+    <rect
        id="rect10-3"
        width="115.66071"
        height="86.934525"
@@ -63,22 +91,22 @@
        id="rect10-3-2"
        width="115.66071"
        height="86.934525"
-       x="-39.574104"
-       y="-2.5839314"
+       x="45.086884"
+       y="161.04655"
        style="fill:#008080;stroke-width:0.26458332" />
     <rect
        id="rect10-3-20"
        width="115.66071"
        height="86.934525"
-       x="-248.33035"
-       y="9.3223209"
+       x="-71.182571"
+       y="42.285564"
        style="fill:#006b80;fill-opacity:1;stroke-width:0.26458332" />
     <rect
        id="rect10-3-2-6"
        width="115.66071"
        height="86.934525"
-       x="-39.574104"
-       y="84.350594"
+       x="-30.325424"
+       y="95.259293"
        style="fill:#00abb1;fill-opacity:1;stroke-width:0.26458332" />
     <rect
        id="rect10-3-2-6-7"
@@ -94,5 +122,53 @@
        x="-137.20537"
        y="143.35269"
        style="fill:#77264b;fill-opacity:1;stroke-width:0.26458332" />
-  </g>
+    <flowRoot
+       xml:space="preserve"
+       id="flowRoot4610"
+       style="font-style:normal;font-weight:normal;font-size:40px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000e3e;fill-opacity:0.17647059;stroke:none;filter:url(#filter4726)"
+       transform="scale(0.26458333)"><flowRegion
+         id="flowRegion4612"
+         style="fill:#000e3e;fill-opacity:0.17647059"><rect
+           id="rect4614"
+           width="280"
+           height="231"
+           x="-432"
+           y="281.51968"
+           style="fill:#000e3e;fill-opacity:0.17647059" /></flowRegion><flowPara
+         id="flowPara4616"
+         style="fill:#170e00;fill-opacity:0.17647059;opacity:1;stroke:#000015;stroke-opacity:1">RVBA e3e2dbff</flowPara></flowRoot>    <flowRoot
+       xml:space="preserve"
+       id="flowRoot4730"
+       style="font-style:normal;font-weight:normal;font-size:40px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none"
+       transform="matrix(0.26458333,0,0,0.26458333,281.64459,-4.5646047)"><flowRegion
+         id="flowRegion4732"><rect
+           id="rect4734"
+           width="578.41333"
+           height="265.87216"
+           x="-1100.9652"
+           y="246.41438" /></flowRegion><flowPara
+         id="flowPara4736">RVBA </flowPara><flowPara
+         id="flowPara4746">006b80ff</flowPara></flowRoot>    <flowRoot
+       xml:space="preserve"
+       id="flowRoot4738"
+       style="fill:black;fill-opacity:1;stroke:none;font-family:sans-serif;font-style:normal;font-weight:normal;font-size:40px;line-height:1.25;letter-spacing:0px;word-spacing:0px"><flowRegion
+         id="flowRegion4740"><rect
+           id="rect4742"
+           width="130.81476"
+           height="69.296463"
+           x="-1110.8647"
+           y="248.53571" /></flowRegion><flowPara
+         id="flowPara4744"></flowPara></flowRoot>    <flowRoot
+       xml:space="preserve"
+       id="flowRoot4730-3"
+       style="font-style:normal;font-weight:normal;font-size:40px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none"
+       transform="matrix(0.26458333,0,0,0.26458333,73.645658,50.35126)"><flowRegion
+         id="flowRegion4732-4"><rect
+           id="rect4734-0"
+           width="578.41333"
+           height="265.87216"
+           x="-1100.9652"
+           y="246.41438" /></flowRegion><flowPara
+         id="flowPara4736-1">RVBA </flowPara><flowPara
+         id="flowPara4746-6">abc837ff</flowPara></flowRoot>  </g>
 </svg>
