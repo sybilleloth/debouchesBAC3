@@ -1,8 +1,34 @@
-.navbar{
-    font-family: 'Trebuchet MS', sans-serif;
+/* Importer la police Exo */
+@import url('https://fonts.googleapis.com/css2?family=Exo:wght@400;700&display=swap');
+
+
+/* latin-ext */
+@font-face {
+    font-family: 'Exo';
+    font-style: normal;
+    font-weight: 700;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/exo/v21/4UaOrEtFpBISfX6jyDM.woff2) format('woff2');
+    unicode-range: U+0100-02AF, U+0304, U+0308, U+0329, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+  }
+
+
+body {
+    font-family: 'Exo', sans-serif;
+    z-index: 1;
+}
+
+/* Appliquer la police Exo aux titres */
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Exo', sans-serif;
+    color:#77264b;
+}
+
+.navbar {
+    font-family: 'Exo', sans-serif;
     position: fixed;
     width: 100%;
-    background: #FF2872;
+    background: #77264b;
     z-index: 99999999999999999999;
     left: 0rem;
     top: 0rem;
@@ -18,11 +44,11 @@
     text-decoration: none !important;
     border-bottom: 2px solid transparent;
     font-size: 14px;
-    font-family: 'Trebuchet MS', sans-serif;
+    font-family: 'Exo', sans-serif;
 }
 
 .navitem:hover{
-    background-color: #333;
+    background-color: rgb(171, 200, 55);
     height: 55px !important;
 }
 

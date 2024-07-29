@@ -2,7 +2,7 @@ import streamlit as st
 from src.router import redirect
 def load_view():
 
-    st.title("Page d'acceuil")
+    st.title("Page d'accueil")
     st.markdown("""
     # Titanic Data Science Solutions
     ### This notebook is a companion to the book Data Science Solutions.
