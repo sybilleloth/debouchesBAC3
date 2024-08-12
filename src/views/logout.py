@@ -5,5 +5,3 @@ from src.router import redirect
 def load_view():
     logout()
     redirect("/login", reload=True)
-
-

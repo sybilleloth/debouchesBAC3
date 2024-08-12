@@ -1,36 +1,57 @@
 import streamlit as st
 from src.router import redirect
+import base64
+
 def load_view():
+    st.title("Bienvenue!")
+    st.header("Quand je serai grande, je voudrais être ....")
 
-    st.title("Page d'accueil")
-    st.markdown("""
-    # Titanic Data Science Solutions
-    ### This notebook is a companion to the book Data Science Solutions.
+    # Diviser la page en deux colonnes
+    col1, col2 = st.columns(2)
 
-    The notebook walks us through a typical workflow for solving data science competitions at sites like Kaggle.
+    # Affichage de la vidéo dans la première colonne
+    with col1:
+        # Chemin vers la vidéo locale
+        # fille devant son tableau noir : https://www.pexels.com/fr-fr/video/jeune-fille-ecrite-ecole-nombres-8088339/
+        video_file = open("./data/8088339-hd_720_1280_30fps.mp4", 'rb')
+        video_bytes = video_file.read()
+        video_base64 = base64.b64encode(video_bytes).decode('utf-8')
 
-    There are several excellent notebooks to study data science competition entries. However many will skip some of the explanation on how the solution is developed as these notebooks are developed by experts for experts. The objective of this notebook is to follow a step-by-step workflow, explaining each step and rationale for every decision we take during solution development.
+        # Affichage de la vidéo avec autoplay
+        video_html = f"""
+            <video width="100%" height="auto" controls autoplay>
+                <source src="data:video/mp4;base64,{video_base64}" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+        """
+        st.markdown(video_html, unsafe_allow_html=True)
 
-    ## Workflow stages
-    The competition solution workflow goes through seven stages described in the Data Science Solutions book.
 
-    1. Question or problem definition.
-    2. Acquire training and testing data.
-    3. Wrangle, prepare, cleanse the data.
-    4. Analyze, identify patterns, and explore the data.
-    5. Model, predict and solve the problem.
-    6. Visualize, report, and present the problem solving steps and final solution.
-    7. Supply or submit the results.
-    8. The workflow indicates general sequence of how each stage may follow the other. However there are use cases with exceptions.
+    # Affichage du texte Markdown dans la deuxième colonne
+    with col2:
+        st.markdown("""
+        Tour d'horizon des débouchés des formations licences professionnelles, Master LMD et Master MEEF dispensées par les établissements d'enseignement supérieur"
 
-    We may combine mulitple workflow stages. We may analyze by visualizing data.
-    Perform a stage earlier than indicated. We may analyze data before and after wrangling.
-    Perform a stage multiple times in our workflow. Visualize stage may be used multiple times.
-    Drop a stage altogether. We may not need supply stage to productize or service enable our dataset for a competition.
-    Question and problem definition
-    Competition sites like Kaggle define the problem to solve or questions to ask while providing the datasets for training your data science model and testing the model results against a test dataset. The question or problem definition for Titanic Survival competition is described here at Kaggle.
+        ### Author and editor of the present investigation : French " Ministère de l'Enseignement Supérieur et de la Recherche".
 
-    Knowing from a training set of samples listing passengers who survived or did not survive the Titanic disaster, can our model determine based on a given test dataset not containing the survival information, if these passengers in the test dataset survived or not.
-    We may also want to develop some early understanding about the domain of our problem. This is described on the Kaggle competition description page here. Here are the highlights to note.
+        on the data basis provided by Ministère de l'Enseignement Supérieur et de la Recherche, thos pages trhough the app, help us understand *
+        how the French educational system is spread all over French régions ans West Indies and how they all deliver a diploma opening the doors of working world.
 
-    """)
+        The analysis pages underline how wide is the range of matters and majors.
+
+    
+        ## investigation Hypothesis
+        
+        1. evaluate the accuracy of the differents years provided
+        2. clean and keep accurate data that can be efficient to analyse
+        3. acquire a relevant knowledge of the provided data leading to an valid conclusion confirming the initial question
+        4. Analyze and explore the data
+        5. Visualize  and present the final conclusion
+     
+        Knowing from a training set of samples listing passengers who survived or did not survive the Titanic disaster, can our model determine based on a given test dataset not containing the survival information, if these passengers in the test dataset survived or not.
+        We may also want to develop some early understanding about the domain of our problem. This is described on the Kaggle competition description page here. Here are the highlights to note.
+
+        """)
+
+if __name__ == "__main__":
+    load_view()

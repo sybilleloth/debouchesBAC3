@@ -1,14 +1,12 @@
 import streamlit as st
 import utils as utl
-
-from src.views import home, goal, dataset, analysis, conclusion, options, login, logout, who
+import json
+from src.views import home, goal, dataset, analysis, conclusion, thanks, login, logout, who
 from src.router import get_route, redirect
 
 
-import json
-
 st.set_page_config(layout="wide", page_title='Navbar sample')
-st.set_option('deprecation.showPyplotGlobalUse', False)
+# st.set_option('deprecation.showPyplotGlobalUse', False) inutile avec la nouvelle version de streamlitVersion 1.37.0 Release date: July 25, 2024
 utl.inject_custom_css()
 utl.navbar_component()
 
@@ -37,8 +35,8 @@ def navigation():
     elif route == "/who":
         who.load_view()
 
-    elif route == "/options":
-        options.load_view() 
+    elif route == "/thanks":
+        thanks.load_view() 
 
     elif route == "/logout":
         logout.load_view()

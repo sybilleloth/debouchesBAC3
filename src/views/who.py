@@ -13,8 +13,10 @@ def load_view():
     ### FACILITATRICE - METHODE - CHALLENGE
 
     7 ans en audit comptable et financier, autant en conseil RH, et 20 ans en marketing et communication, 
-    ont aiguisé mon sens de l'expérience client, de la transparence des chiffres et de leur sens !!
-    Nous vivons une période tellement passionnante autour de la data.
+    ont aiguisé mon sens de l'expérience client, de la transparence des chiffres et de leur sens !!    
+                
+    Nous vivons une période tellement passionnante autour de la data.    
+                
     Je serais heureuse d'échanger sur la valeur de l'analyse et de la data 
     dans l'enchantement de la relation client!
                 
@@ -27,14 +29,14 @@ def load_view():
     # Lire et afficher l'image avec le lien
     try:
         image = Image.open(image_path)
-        st.image(image, caption="Logo LinkedIn", width=150)  # Largeur en pixels (50px correspond environ à 1.5cm)
+        st.image(image, width=100)  # Largeur en pixels (50px correspond environ à 1.5cm)
         st.markdown("""
         <a href="https://www.linkedin.com/in/sybille-dethoor-loth" target="_blank">
             Visitez mon profil LinkedIn
         </a>
         """, unsafe_allow_html=True)
     except FileNotFoundError:
-        st.error("L'image n'a pas été trouvée au chemin spécifié.")
+        st.error("L'image n'a pas été trouvée à l'adresse de chemin spécifié.")
     
     
 if __name__ == "__main__":
