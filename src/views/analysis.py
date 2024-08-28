@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 
 # Définition de la fonction de chargement des données et de visualisation principale
 def load_view():
-    st.title('Analyses et visualisations')
+    st.title(':mortar_board: Analyses et visualisations')
 
     st.header("Diversité des diplômes Bac + 3")
     viz_speciality_diploma_type()
@@ -29,6 +29,9 @@ def load_view():
         viz_map_ranking()
     with col4:
         viz_ranking_region()
+    viz_employ_rate__diploma()
+    viz_rank_university()
+    viz_rank_university_avge()
 
 #ci-dessous, ajout des visualisations par SDL
 
@@ -183,10 +186,16 @@ def viz_ranking_speciality():
     st.plotly_chart(fig)
 
 
+
+
 def viz_map_ranking():
     # Chargement des données
     csv_file = "./data/esr_intersup_nettoye.csv"
     df = pd.read_csv(csv_file)
+
+    # Remplacer les NaN dans "Nombre de poursuivants" et "Nombre de sortants" par 0
+    df['Nombre de poursuivants'].fillna(0, inplace=True)
+    df['Nombre de sortants'].fillna(0, inplace=True)
 
     # Calculer le total des "nombre de poursuivants" + "nombre de sortants" pour chaque discipline
     df['Total'] = df['Nombre de poursuivants'] + df['Nombre de sortants']
@@ -226,6 +235,7 @@ def viz_map_ranking():
     st.plotly_chart(fig)
 
 
+
 def viz_ranking_region():
     # Chargement des données
     csv_file = "./data/esr_intersup_nettoye.csv"
@@ -250,14 +260,158 @@ def viz_ranking_region():
     st.plotly_chart(fig)
 
 
-# Appeler la fonction pour lancer l'application Streamlit
-if __name__ == "__main__":
-    viz_map_ranking()
-    viz_ranking_region()
+def viz_employ_rate__diploma() :
+    st.markdown("### Taux d'emploi salarié en France moyen par libellé du diplôme")
 
+    # Chargement des données
+    csv_file = "./data/esr_intersup_nettoye.csv"
+    df = pd.read_csv(csv_file)
+
+    # Calculer le taux d'emploi moyen par Libellé du diplôme
+    taux_emploi_moyen = df.groupby('Libellé du diplôme')['Taux d\'emploi salarié en France'].mean().reset_index()
+
+    # Tri des résultats pour un meilleur affichage
+    taux_emploi_moyen = taux_emploi_moyen.sort_values(by='Taux d\'emploi salarié en France', ascending=False)
+
+    # Création de la figure et des axes
+    fig, ax = plt.subplots(figsize=(12, 8))
+    
+    # Visualisation avec seaborn
+    sns.barplot(x='Taux d\'emploi salarié en France', y='Libellé du diplôme', data=taux_emploi_moyen, palette='viridis', ax=ax)
+
+    # Ajuster l'échelle de l'axe x pour s'adapter aux données
+    ax.set_xlim([taux_emploi_moyen['Taux d\'emploi salarié en France'].min() * 0.9, 
+                 taux_emploi_moyen['Taux d\'emploi salarié en France'].max() * 1.1])
+
+    # Supprimer le label de l'axe des ordonnées
+    ax.set_ylabel('')
+
+    # Ajuster l'affichage des étiquettes de l'axe y (Libellé du diplôme)
+    ax.set_yticklabels(ax.get_yticklabels(), rotation=0, ha='right', fontsize=10, wrap=True)
+
+    # Ajuster les étiquettes pour qu'elles soient sur 3 lignes
+    for label in ax.get_yticklabels():
+        label.set_text('\n'.join(label.get_text().split(' ')))
+
+    # Appliquer les ajustements de layout pour gérer l'espace
+    plt.tight_layout()
+
+    # Afficher la figure dans Streamlit
+    st.pyplot(fig)
+
+    # Créer la légende après le graphique
+    st.markdown("### Légende")
+    for index, row in taux_emploi_moyen.iterrows():
+        st.write(f"{row['Libellé du diplôme']}: {row['Taux d\'emploi salarié en France']:.2f}%")
+
+
+def viz_rank_university():
+        st.markdown("### Classement des Établissements en fonction du Nombre de Sortants et Poursuivants")
+
+    # Chargement des données
+        csv_file = "./data/esr_intersup_nettoye.csv"
+        df = pd.read_csv(csv_file)
+
+    # Calculer le total des "Nombre de sortants" + "Nombre de poursuivants" par établissement
+        df_grouped = df.groupby('Établissement').agg({
+            'Nombre de poursuivants': 'sum',
+            'Nombre de sortants': 'sum'
+        }).reset_index()
+
+    # Ajouter une colonne pour le total
+        df_grouped['Total Sortants + Poursuivants'] = df_grouped['Nombre de poursuivants'] + df_grouped['Nombre de sortants']
+
+    # Remplacer les NaN par 0 ou une petite valeur positive pour éviter les erreurs
+        df_grouped['Total Sortants + Poursuivants'].fillna(0, inplace=True)
+
+    # Filtrer les établissements où le total est 0 pour éviter d'afficher des points de taille 0
+        df_grouped = df_grouped[df_grouped['Total Sortants + Poursuivants'] > 0]
+    
+    # Trier par ordre décroissant du total
+        df_grouped = df_grouped.sort_values(by='Total Sortants + Poursuivants', ascending=False)
+
+
+
+    # Créer une visualisation avec Plotly
+        fig = px.scatter(df_grouped, 
+                         x='Total Sortants + Poursuivants', 
+                         y='Établissement', 
+                             size='Total Sortants + Poursuivants', 
+                         color='Total Sortants + Poursuivants',
+                         hover_name='Établissement',
+                         title="Classement des Établissements en fonction du Nombre de Sortants et Poursuivants",
+                         labels={
+                             'Total Sortants + Poursuivants': "Total Sortants + Poursuivants",
+                             'Etablissement actuel': "Établissement"
+                         })
+
+        # Mettre à jour la disposition pour améliorer l'affichage
+        fig.update_traces(marker=dict(line=dict(width=1, color='DarkSlateGrey')), selector=dict(mode='markers'))
+        fig.update_layout(height=600, width=800, margin=dict(l=0, r=0, t=30, b=0))
+    
+    # Afficher la figure dans Streamlit
+        st.plotly_chart(fig)
+
+def viz_rank_university_avge():
+    st.markdown("### Classement des Établissements en fonction du Nombre de Sortants Moyens par Formation")
+
+    # Chargement des données
+    csv_file = "./data/esr_intersup_nettoye.csv"
+    df = pd.read_csv(csv_file)
+
+    # Calculer le nombre de formations uniques par établissement
+    df_unique_formations = df.groupby('Établissement')["Libellé du diplôme"].nunique().reset_index()
+    df_unique_formations.rename(columns={"Libellé du diplôme": 'Nombre de formations uniques'}, inplace=True)
+
+    # Calculer le total des "Nombre de sortants" et "Nombre de poursuivants" par établissement
+    df_grouped = df.groupby('Établissement').agg({
+        'Nombre de poursuivants': 'sum',
+        'Nombre de sortants': 'sum'
+    }).reset_index()
+
+    # Ajouter la colonne "Nombre de formations uniques"
+    df_grouped = pd.merge(df_grouped, df_unique_formations, on='Établissement')
+
+    # Calculer le nombre moyen de sortants par formation
+    df_grouped['Nombre moyen de sortants par formation'] = df_grouped['Nombre de sortants'] / df_grouped['Nombre de formations uniques']
+
+    # Ajouter une colonne pour le total des sortants et poursuivants
+    df_grouped['Total Sortants + Poursuivants'] = df_grouped['Nombre de poursuivants'] + df_grouped['Nombre de sortants']
+
+    # Remplacer les NaN par 0 ou une petite valeur positive pour éviter les erreurs
+    df_grouped['Nombre moyen de sortants par formation'].fillna(0, inplace=True)
+
+    # Filtrer les établissements où le total est 0 pour éviter d'afficher des points de taille 0
+    df_grouped = df_grouped[df_grouped['Total Sortants + Poursuivants'] > 0]
+    
+    # Trier par ordre décroissant du nombre moyen de sortants par formation
+    df_grouped = df_grouped.sort_values(by='Nombre moyen de sortants par formation', ascending=False)
+
+    # Créer une visualisation avec Plotly
+    fig = px.scatter(df_grouped, 
+                     x='Total Sortants + Poursuivants', 
+                     y='Établissement', 
+                     size='Nombre moyen de sortants par formation', 
+                     color='Nombre moyen de sortants par formation',
+                     hover_name='Établissement',
+                     title="Classement des Établissements en fonction du Nombre Moyen de Sortants par Formation",
+                     labels={
+                         'Total Sortants + Poursuivants': "Total Sortants + Poursuivants",
+                         'Établissement': "Établissement",
+                         'Nombre moyen de sortants par formation': "Nombre Moyen de Sortants par Formation"
+                     })
+
+    # Mettre à jour la disposition pour améliorer l'affichage
+    fig.update_traces(marker=dict(line=dict(width=1, color='DarkSlateGrey')), selector=dict(mode='markers'))
+    fig.update_layout(height=600, width=800, margin=dict(l=0, r=0, t=30, b=0))
 
 # Appeler la fonction pour lancer l'application Streamlit
 if __name__ == "__main__":
     load_view()
     visualisation()
     viz_speciality_diploma_type()
+    viz_map_ranking()
+    viz_ranking_region()
+    viz_employ_rate__diploma()
+    viz_rank_university()
+    viz_rank_university_avge()

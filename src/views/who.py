@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 from PIL import Image
 
 def load_view():    
-    st.title('Qui suis-je ?')
+    st.title(':female-technologist: Qui suis-je ?')
     st.markdown("""
 
     ### FACILITATRICE - METHODE - CHALLENGE

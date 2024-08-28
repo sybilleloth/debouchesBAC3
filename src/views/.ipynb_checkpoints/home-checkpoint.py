@@ -6,7 +6,7 @@ def load_view():
 
    
     # Configuration de la page Billel à SD l : à enlever ici et laisser dans le main
-    st.set_page_config(page_title="Video Display Page", layout="wide")
+    #st.s.t_p.ge_config(page_title="Video Display Page", layout="wide")
 
     st.title("Affichage de la vidéo")
 

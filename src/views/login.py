@@ -28,9 +28,7 @@ def load_view():
         </video>
     """
     st.markdown(video_html, unsafe_allow_html=True)
-
-        
-        
+   
         
     st.title("Veuillez vous identifier pour accéder aux pages de l'analyse")
     agree = st.checkbox(

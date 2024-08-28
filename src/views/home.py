@@ -34,7 +34,7 @@ def load_view():
 
         ### Author and editor of the present investigation : French " Ministère de l'Enseignement Supérieur et de la Recherche".
 
-        on the data basis provided by Ministère de l'Enseignement Supérieur et de la Recherche, thos pages trhough the app, help us understand *
+        On the dataset basis provided by Ministère de l'Enseignement Supérieur et de la Recherche, those pages displayed through this streamlit app, help us understand 
         how the French educational system is spread all over French régions ans West Indies and how they all deliver a diploma opening the doors of working world.
 
         The analysis pages underline how wide is the range of matters and majors.
@@ -42,15 +42,13 @@ def load_view():
     
         ## investigation Hypothesis
         
-        1. evaluate the accuracy of the differents years provided
-        2. clean and keep accurate data that can be efficient to analyse
-        3. acquire a relevant knowledge of the provided data leading to an valid conclusion confirming the initial question
+        1. Evaluate the accuracy of the data provided regarding the periode from diplomation in 2019 up to 2021
+        2. Clean and keep accurate data that can be efficient to analyse
+        3. Acquire a relevant knowledge of the provided data leading to a valid conclusion confirming the initial question
         4. Analyze and explore the data
         5. Visualize  and present the final conclusion
      
-        Knowing from a training set of samples listing passengers who survived or did not survive the Titanic disaster, can our model determine based on a given test dataset not containing the survival information, if these passengers in the test dataset survived or not.
-        We may also want to develop some early understanding about the domain of our problem. This is described on the Kaggle competition description page here. Here are the highlights to note.
-
+        In  a few words : does the French educational system lead to work all over France equally, are there some favorable universities and how high is the rate of students resuming their studies when they graduate with a BAB + 3 ? 
         """)
 
 if __name__ == "__main__":

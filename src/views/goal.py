@@ -15,7 +15,7 @@ df = pd.read_csv('https://github.com/ipython-books/'
                  dayfirst=True)
 
 def load_view():    
-    st.title("tour d'horizon des débouchés des formations licences professionnelles, Master LMD et Master MEEF dispensées par les établissements d'enseignement supérieur")
+    st.title(":dart: tour d'horizon des débouchés des formations licences professionnelles, Master LMD et Master MEEF dispensées par les établissements d'enseignement supérieur")
     st.header("Contexte et objectif du projet")
     st.markdown("### 1 : Introduction : pourquoi ? \n La pratique professionnelle met en lumière combien la formation générale et technique reste malgré tous les bouleversements économiques, sanitaires, innovants... essentielle au démarrage d'une vie professionnelle.    \nLes carrières individuelles peuvent souvent ne pas être linéaires! Or, notre système éducatif supérieur français ouvre un champ très large aux jeunes dans le choix des formations et de leurs spécialités.  \nCeci pose la question de l'égalité des chances à l'entrée dans le monde du travail que nous considérerons au démarrage d'une carrière, comme celui de l'entrée dans le système salarié.    \n")
 
