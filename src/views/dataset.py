@@ -4,14 +4,12 @@ from streamlit.components.v1 import html
 import pandas as pd
 import numpy as np
 
-from streamlit_folium import folium_static
-from folium.plugins import MarkerCluster
 import folium #https://python-visualization.github.io/folium/latest/getting_started.html ou https://folium.streamlit.app/
+from folium.plugins import MarkerCluster
 import plotly.express as px
 import matplotlib.pyplot as plt
 import seaborn as sns
 import leafmap.foliumap as leafmap
-
 
 def load_view():
     # Fonction pour charger les données

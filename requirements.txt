@@ -1,8 +1,32 @@
 setuptools
-matplotlib
-numpy
-pandas
+matplotlib:                     - connaissance fichier data / -analysis.py // - dataset /
+numpy                           - connaissance fichier data / -analysis.py / / - who // - dataset /
+pandas                          - connaissance fichier data /- appli MESR sdl /  / -analysis.py // -conclusion.py // - who // - dataset /
+seaborn                         / -analysis.py // - dataset /
+router                          / -login.py /
+sqlite3                         / -database.py /
+streamlit                       - appli MESR sdl /  - utils.py / -router.py // -analysis.py // -conclusion.py // -logout.py // -login.py ./ - thanks // - who // - home // - dataset /
+plotly.express                  / -analysis.py // -conclusion.py // - dataset /
+json                            - appli MESR sdl /  - setup.py// -auth.py // -session.py /
+pydeck                          / -conclusion.py /
+base64                          - setup.py / utils.py/ -conclusion.py // -login.py // - home /
+seaborn                         - connaissance fichier data / - dataset /
+utils                           - appli MESR sdl /  
+leafmap.foliumap as leafmap     - appli MESR sdl // - dataset /
+altair as alt                   - connaissance fichier data 
+matplotlib.pyplot as plt - connaissance fichier data / - who // - dataset /
+geopandas as gpd         - connaissance fichier data 
+datetime                 - connaissance fichier data / - who /
+from PIL import Image           - connaissance fichier data / - who /
+hashlib                         / -session.py /
+random                          / -analysis.py // -analysis.py /
+streamlit.components.v1 :html   / -dataset/
+time                            / -router.py // -session.py /                          
+urllib.parse                    / -router.py /
+datetime                        / - who /
+folium.plugins : MarkerCluster  / - dataset /
+streamlit_folium :folium_static, st_folium  / - dataset /
+folium                          / - dataset /
+streamlit.components.v1 : html  / - dataset /
+unittest                        /UnitTest
 scikit_learn
-seaborn
-streamlit
-re
