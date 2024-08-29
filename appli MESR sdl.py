@@ -1,10 +1,12 @@
 import streamlit as st
 import utils as utl
 import json
-from src.views import home, dataset, goal, analysis, conclusion, thanks, login, logout, who
-from src.router import get_route, redirect
 import leafmap.foliumap as leafmap
 import pandas as pd
+
+from src.views import home, dataset, goal, analysis, conclusion, thanks, login, logout, who
+from src.router import get_route, redirect
+
 
 st.set_page_config(layout="wide", page_title='Navbar sample')
 # st.set_option('deprecation.showPyplotGlobalUse', False) inutile avec la nouvelle version de streamlitVersion 1.37.0 Release date: July 25, 2024
@@ -22,7 +24,7 @@ def navigation():
         redirect("login")
     
     route = get_route()
-    st.write(f"La route actuelle est {route}")
+    print(f"La route actuelle est {route}")
     if route == "/home":
         home.load_view()
     
