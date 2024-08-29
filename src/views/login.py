@@ -16,7 +16,7 @@ def password_valid(password):
 
 def load_view():
     # Chemin vers la vidéo locale
-    video_file = open("./data/7945680-hd_1920_1080_25fps.mp4", 'rb')
+    video_file = open("./src/assets/images/7945680-hd_1920_1080_25fps.mp4", 'rb')
     video_bytes = video_file.read()
     video_base64 = base64.b64encode(video_bytes).decode('utf-8')
 

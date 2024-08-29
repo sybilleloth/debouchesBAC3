@@ -18,7 +18,7 @@ def load_view():
 
     # Affichage de la vidéo dans la première colonne
     with col1:
-        video_file = open("./data/8284321-hd_1080_1920_30fps.mp4", 'rb')
+        video_file = open("./src/assets/images/8284321-hd_1080_1920_30fps.mp4", 'rb')
         video_bytes = video_file.read()
         video_base64 = base64.b64encode(video_bytes).decode('utf-8')
 

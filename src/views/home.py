@@ -13,7 +13,7 @@ def load_view():
     with col1:
         # Chemin vers la vidéo locale
         # fille devant son tableau noir : https://www.pexels.com/fr-fr/video/jeune-fille-ecrite-ecole-nombres-8088339/
-        video_file = open("./data/8088339-hd_720_1280_30fps.mp4", 'rb')
+        video_file = open("./src/assets/images/8088339-hd_720_1280_30fps.mp4", 'rb')
         video_bytes = video_file.read()
         video_base64 = base64.b64encode(video_bytes).decode('utf-8')
 

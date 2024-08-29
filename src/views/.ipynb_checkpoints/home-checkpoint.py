@@ -11,7 +11,7 @@ def load_view():
     st.title("Affichage de la vidéo")
 
     # Chemin vers la vidéo locale
-    video_file = open("./data/8088339-hd_720_1280_30fps.mp4", 'rb')
+    video_file = open("./src/assets/images/8088339-hd_720_1280_30fps.mp4", 'rb')
     video_bytes = video_file.read()
 
     # Affichage de la vidéo

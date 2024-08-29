@@ -3,7 +3,6 @@ matplotlib:                     - connaissance fichier data / -analysis.py // - 
 numpy                           - connaissance fichier data / -analysis.py / / - who // - dataset /
 pandas                          - connaissance fichier data /- appli MESR sdl /  / -analysis.py // -conclusion.py // - who // - dataset /
 seaborn                         / -analysis.py // - dataset /
-router                          / -login.py /
 sqlite3                         / -database.py /
 streamlit                       - appli MESR sdl /  - utils.py / -router.py // -analysis.py // -conclusion.py // -logout.py // -login.py ./ - thanks // - who // - home // - dataset /
 plotly.express                  / -analysis.py // -conclusion.py // - dataset /
