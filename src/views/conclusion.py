@@ -3,7 +3,7 @@ import pandas as pd
 import pydeck as pdk
 import base64
 import plotly.express as px
-
+import matplotlib.pyplot as plt
 def load_view():
     # Chargement des données
     csv_file = "./data/esr_intersup_nettoye.csv"
@@ -32,6 +32,7 @@ def load_view():
 
     # Affichage du texte Markdown dans la deuxième colonne
     with col2:
+        # Calcul des différentes métriques
         total_sortants = df["Nombre de sortants"].sum()
         total_poursuivants = df["Nombre de poursuivants"].sum()
         total_regions = df["Région"].nunique()
@@ -40,9 +41,11 @@ def load_view():
         total_disciplines = df["Discipline"].nunique()
         total_periodes = df["Année(s) d'obtention du diplôme prise(s) en compte"].nunique()
 
+        # Titre et sous-titre
         st.title('Retenons de cette exploration...')
-        st.header("En synthèse, les données : ")
+        st.header("En synthèse, les données :")
 
+        # Dictionnaire contenant les données globales
         donnees_globales = {
             "Périodes de diplomation considérées": total_periodes,
             "Total Effectif des étudiants sortants": total_sortants,
@@ -51,14 +54,33 @@ def load_view():
             "Nombre de régions": total_regions,
             "Nombre d'académies": total_academies,
             "Nombre d'établissements": total_etablissements,
-        }   
-
+        }
+        #st.write(donnees_globales.items())
+        # Affichage des données
+        i = 1
         for i, (legende, value) in enumerate(donnees_globales.items(), start=1):
-            st.write(f"{i}. {legende} : {round(value)}")
+            st.write(f"{i}. {legende} : {int(value):,}".replace(',', ' '))
+            i+=1
+    carte()
+    # Diviser la page en deux colonnes
+    col3, col4 = st.columns(2)
+    with col3 : 
+        top3_formation("Libellé du diplôme", "formations","Taux d'emploi","taux d'emploi")
+    with col4 : 
+        top3_formation("Libellé du diplôme", "formations","Mois après la diplomation","temps nécessaire à la prise de poste en emploi")
+    # Diviser la page en deux colonnes
+    col5, col6 = st.columns(2)
+    with col5 :
+        maxi_poursuite()  
+    with col6 : 
+        maxi_region()  
+    
+  
+def carte():
+    st.header("Les marches du podium :")   
 
-    st.header("Les marches du podium :")    
 
-    # Chargement des données avec coordonnées
+# Chargement des données avec coordonnées
     csv_filec = "./data/esr_nettoye_avec_cities.csv"
     dfc = pd.read_csv(csv_filec)
 
@@ -84,13 +106,14 @@ def load_view():
     st.write("Données de l'académie pour la carte:")
     st.write(df_academie.head())  # Affiche les premières lignes pour vérification
 
-    # Préparation des données pour la visualisation
-    chart_data = df_academie[['latitude', 'longitude', 'moyenne_sortants_academie', 'moyenne_sortants_par_diplome_academie']].dropna()
-
-    # Affichage de la carte avec pydeck
+# Préparation des données pour la visualisation
+    chart_data = df_academie[['Académie', 'latitude', 'longitude', 'moyenne_sortants_academie', 'moyenne_sortants_par_diplome_academie']].dropna()
+    st.write(chart_data.head()) #check à supprimer
+# Affichage de la carte avec pydeck
     st.pydeck_chart(
         pdk.Deck(
             map_style=None,
+            #Centrage de la carte sur la latitude moyenne de tous les points de l'académie.
             initial_view_state=pdk.ViewState(
                 latitude=chart_data['latitude'].mean(),
                 longitude=chart_data['longitude'].mean(),
@@ -102,24 +125,20 @@ def load_view():
                     "ScatterplotLayer",
                     data=chart_data,
                     get_position=['longitude', 'latitude'],
-                    get_color=[200, 30, 0, 160],
+                    get_color=[119, 38, 75, 255],
                     get_radius="moyenne_sortants_par_diplome_academie",
                     pickable=True,
                 ),
             ],
-            tooltip={
-                "html": "<b>Académie:</b> {Académie}<br/><b>Moyenne Sortants par Académie:</b> {moyenne_sortants_academie}<br/><b>Moyenne Sortants par Diplôme par Académie:</b> {moyenne_sortants_par_diplome_academie}",
-                "style": {"backgroundColor": "steelblue", "color": "white"}
+            #affiche d'un point de données sur la carte. 
+                tooltip={
+                    "html": "<b>Académie:</b> {Académie}<br/><b>Moyenne Sortants par Académie:</b> {moyenne_sortants_academie}<br/><b>Moyenne Sortants par Diplôme par Académie:</b> {moyenne_sortants_par_diplome_academie}",
+                    "style": {"backgroundColor": "steelblue", "color": "red"}
             }
         )
     )
-        # Diviser la page en deux colonnes
-    col3, col4 = st.columns(2)
-    with col3 : 
-        top3_formation("Libellé du diplôme", "formations","Taux d'emploi","taux d'emploi")
-    with col4 : 
-        top3_formation("Libellé du diplôme", "formations","Mois après la diplomation","temps nécessaire à la prise de poste en emploi")
-def top3_formation(criteria, texte1,cible,texte2):
+    
+def top3_formation(criteria, texte1, cible, texte2):
     # Affiche les 3 formations avec le taux d'emploi le plus favorable pour chaque type de diplôme.
     # Chemin vers le fichier CSV
     csv_file = "./data/esr_intersup_nettoye.csv"
@@ -127,14 +146,20 @@ def top3_formation(criteria, texte1,cible,texte2):
     # Charger les données depuis le fichier CSV
     df = pd.read_csv(csv_file)
     
-    st.write(f"Les 3 {texte1} dont le {texte2} est le plus favorable par typologie de diplôme : Licence pro, Master ou MEEF")
+    st.write(f"Les {texte1} dont le {texte2} est le plus favorable par typologie de diplôme : Licence pro, Master ou MEEF")
 
     # Filtrer les données pertinentes
     df_filtered = df[["Type de diplôme", criteria, cible]].dropna()
 
-    # Vérification des valeurs uniques dans la colonne "Type de diplôme"
-    unique_diplomes = df_filtered["Type de diplôme"].unique()
-    #st.write("Types de diplômes présents dans les données :", unique_diplomes)
+    if cible == "Taux d'emploi" : 
+        # Compter le nombre de formations avec un taux d'emploi de 100%
+        formations_100 = df_filtered[df_filtered[cible] == 100].shape[0]
+    else :   formations_100 = df_filtered[df_filtered[cible] == 6].shape[0]
+    print(formations_100)
+
+
+    # Afficher le nombre de formations avec un taux d'emploi de 100% en gras
+    st.markdown(f"**Nombre de {criteria} dont l'indice {texte2} est idéal : {formations_100}**")
 
     # Filtrer et trier pour chaque type de diplôme
     diplomes = ["Licence professionnelle", "Master LMD", "Master MEEF"]
@@ -149,6 +174,14 @@ def top3_formation(criteria, texte1,cible,texte2):
 
     # Vérification des données concaténées
     st.write("Top formations par diplôme :", top_formations)
+
+    # Calculer la valeur minimale et maximale du critère cible
+    min_value = top_formations[cible].min()
+    max_value = top_formations[cible].max()
+
+    # Calculer les limites pour l'axe y
+    y_min = min_value * 0.9
+    y_max = max_value * 1.1
 
     # Créer un diagramme à barres groupées avec des couleurs personnalisées
     color_map = {
@@ -165,18 +198,106 @@ def top3_formation(criteria, texte1,cible,texte2):
         color="Type de diplôme", 
         color_discrete_map=color_map,  # Appliquer les couleurs personnalisées
         barmode="group",
-        title="Le top 3 avec le {texte2} le plus favorable par type de diplôme"
+        title=f"Le top  avec le {texte2} le plus favorable par type de diplôme"
     )
+
+    # Appliquer la plage personnalisée à l'axe y
+    fig.update_yaxes(range=[y_min, y_max])
+
+    # Formater les noms des abscisses sur trois lignes
+    fig.update_xaxes(tickvals=top_formations[criteria],
+                     ticktext=[label.replace(' ', '\n', 2) for label in top_formations[criteria]])
 
     # Afficher le graphique
     st.plotly_chart(fig)
 
+   
+def maxi_poursuite():
+    # Charger les données du fichier CSV
+    csv_file = "./data/esr_intersup_nettoye.csv"
+    df = pd.read_csv(csv_file)
+    
+    # Filtrer les données pour inclure uniquement les lignes avec un nombre de poursuivants et de sortants
+    filtered_data = df.dropna(subset=['Nombre de poursuivants', 'Nombre de sortants'])
+
+    # Ajouter une colonne pour calculer le taux de poursuite d'études
+    filtered_data['Taux de poursuite'] = filtered_data['Nombre de poursuivants'] / filtered_data['Nombre de sortants'] * 100
+
+    # Grouper les données par région et calculer le taux de poursuite moyen par région
+    region_pursuit_rate = filtered_data.groupby('Région')['Taux de poursuite'].mean().reset_index()
+
+    # Trier les régions par taux de poursuite d'études décroissant
+    top_regions = region_pursuit_rate.sort_values(by='Taux de poursuite', ascending=False).head(3)
+
+    # Afficher les résultats
+    st.subheader("Les trois régions avec le plus fort taux de poursuite d'études après Bac +3")
+        
+    # Créer un graphique avec les couleurs spécifiques et taille fixée
+    fig, ax = plt.subplots(figsize=(8, 6))
+    colors = ["#abc837", "#77264b", "#006b80"]
+    bars = ax.bar(top_regions['Région'], top_regions['Taux de poursuite'], color=colors)
+    
+    # Ajouter les annotations sur chaque barre
+    for bar in bars:
+        height = bar.get_height()
+        ax.annotate(f'{height:.2f}%',
+                    xy=(bar.get_x() + bar.get_width() / 2, height),
+                    xytext=(0, 3),  # 3 points de décalage en vertical
+                    textcoords="offset points",
+                    ha='center', va='bottom')
+
+    ax.set_xlabel("Région")
+    ax.set_ylabel("Taux de poursuite (%)")
+    ax.set_title("Top 3 des régions par taux de poursuite d'études après Bac +3")
+
+    # Afficher le graphique dans Streamlit
+    st.pyplot(fig)
+
+def maxi_region():
+    # Charger les données du fichier CSV
+    csv_file = "./data/esr_intersup_nettoye.csv"
+    df = pd.read_csv(csv_file)
+    
+    # Calculer le taux d'emploi moyen par région
+    region_employment_rate = df.groupby('Région')['Taux d\'emploi salarié en France'].mean().reset_index()
+
+    # Trier les régions par taux d'emploi décroissant et sélectionner les 3 premières
+    top_regions = region_employment_rate.sort_values(by='Taux d\'emploi salarié en France', ascending=False).head(3)
+
+    st.subheader("Les 3 régions dont le taux d'emploi moyen est le plus favorable") 
+    
+    # Créer un graphique en pyramide (barh pour barres horizontales inversées) avec taille fixée
+    fig, ax = plt.subplots(figsize=(8, 6))
+    colors = ["#abc837", "#77264b", "#006b80"]
+    bars = ax.barh(top_regions['Région'], top_regions['Taux d\'emploi salarié en France'], color=colors)
+
+    # Inverser l'ordre des régions pour avoir une pyramide inversée
+    ax.invert_yaxis()
+    
+    # Ajouter les annotations sur chaque barre
+    for bar in bars:
+        width = bar.get_width()
+        ax.annotate(f'{width:.2f}%',
+                    xy=(width, bar.get_y() + bar.get_height() / 2),
+                    xytext=(3, 0),  # 3 points de décalage en horizontal
+                    textcoords="offset points",
+                    ha='left', va='center')
+
+    ax.set_xlabel("Taux d'emploi salarié en France (%)")
+    ax.set_ylabel("Région")
+    ax.set_title("Top 3 des régions par taux d'emploi moyen")
+
+    # Afficher le graphique dans Streamlit
+    st.pyplot(fig)
+
+
+st.write("Les 3 formations menant le plus rapidement les étudiants dits sortants vers la prise de poste : licence pro, Master ou MEEF")
+st.write("Les 3 régions dont le taux d'emploi est le plus favorable sur l'ensemble des formations : licence pro, Master ou MEEF")
+st.write("Les 3 régions menant le plus rapidement les étudiants dits sortants vers la prise de poste : licence pro, Master ou MEEF")
+st.write("Les 3 formations comprenant le plus fort taux d'étudiants poursuivant après l'obtention de leur BAC + 3 : licence pro, Master ou MEEF")
+ 
+
 # Exécution de la fonction principale
 if __name__ == "__main__":
     load_view()
-
-    st.write("Les 3 formations menant le plus rapidement les étudiants dits sortants vers la prise de poste : licence pro, Master ou MEEF")
-    st.write("Les 3 régions dont le taux d'emploi est le plus favorable sur l'ensemble des formations : licence pro, Master ou MEEF")
-    st.write("Les 3 régions menant le plus rapidement les étudiants dits sortants vers la prise de poste : licence pro, Master ou MEEF")
-    st.write("Les 3 formations comprenant le plus fort taux d'étudiants poursuivant après l'obtention de leur BAC + 3 : licence pro, Master ou MEEF")
-    st.write("Les 3 régions comprenant le plus fort taux d'étudiants poursuivant après l'obtention de leur BAC + 3 : licence pro, Master ou MEEF")
+ 

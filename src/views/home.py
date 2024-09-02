@@ -37,18 +37,18 @@ def load_view():
         On the dataset basis provided by Ministère de l'Enseignement Supérieur et de la Recherche, those pages displayed through this streamlit app, help us understand 
         how the French educational system is spread all over French régions ans West Indies and how they all deliver a diploma opening the doors of working world.
 
-        The analysis pages underline how wide is the range of matters and majors.
+        The analysis pages underline how wide the range of matters and majors is.
 
     
-        ## investigation Hypothesis
+        ## investigation hypothesis
         
-        1. Evaluate the accuracy of the data provided regarding the periode from diplomation in 2019 up to 2021
+        1. Evaluate the accuracy of the data provided regarding the period of graduation between 2019 and 2021
         2. Clean and keep accurate data that can be efficient to analyse
         3. Acquire a relevant knowledge of the provided data leading to a valid conclusion confirming the initial question
         4. Analyze and explore the data
         5. Visualize  and present the final conclusion
      
-        In  a few words : does the French educational system lead to work all over France equally, are there some favorable universities and how high is the rate of students resuming their studies when they graduate with a BAB + 3 ? 
+        In  a few words : does the French educational system lead to work all over France equally, are there some favorable universities and how high is the rate of students resuming their studies when they graduate with a BAC + 3 ? 
         """)
 
 if __name__ == "__main__":

@@ -40,6 +40,7 @@ def load_view():
     else : st.write('Cette application, pour des raisons de sécurité, ne peut être accessible sans coordonnées mail')
     email = st.text_input('Email', '')
     password = st.text_input('Mot de passe', '', type='password')
+    st.write("Que souhaitez-vous faire ?")
     col1, col2 = st.columns([1, 1], gap="small")
     with col1:
         log_in_button = st.button('Vous connecter avec vos identifiants')
@@ -55,7 +56,7 @@ def load_view():
         else:
             res = auth(email, password)
             if not res:
-                st.error("Wrong Account")
+                st.error("Erreur d'adresse mail ou de mot de passe")
             else:
                 st.success("Connexion en cours")
                 redirect("home", reload=True)

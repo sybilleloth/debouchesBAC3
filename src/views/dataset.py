@@ -1,18 +1,19 @@
 import streamlit as st
-from streamlit_folium import folium_static, st_folium  # Importer folium_static
+from streamlit_folium import folium_static#, st_folium  Importer folium_static
 from streamlit.components.v1 import html
 import pandas as pd
 import numpy as np
 
-import folium #https://python-visualization.github.io/folium/latest/getting_started.html ou https://folium.streamlit.app/
-from folium.plugins import MarkerCluster
+#import folium #https://python-visualization.github.io/folium/latest/getting_started.html ou https://folium.streamlit.app/
+#from folium.plugins import MarkerCluster
 import plotly.express as px
 import matplotlib.pyplot as plt
 import seaborn as sns
 import leafmap.foliumap as leafmap
 
+
 def load_view():
-    # Fonction pour charger les données
+    # chargement dataset
     csv_file = "./data/esr_intersup_nettoye.csv"
     try:
         df = pd.read_csv(csv_file)
@@ -23,8 +24,7 @@ def load_view():
         
     except Exception as e:
         print(f"Une erreur est survenue lors du chargement du fichier: {e}")
-        
-
+  
 # affichage et appel pour la vue de la page dataset
     st.title(':label: Présentation du jeu de données nettoyé')
     st.markdown("""
@@ -33,7 +33,7 @@ def load_view():
     st.write(f"**Taille du jeu de données (lignes, colonnes):** {df.shape}")
     st.dataframe(df)
     display_factor()
-    #display_map_leafmap()
+    display_majors()
     display_spread_time()
     st.header("Visualisations facilitant la prise de connaissance des données\n")
     col1, col2 = st.columns(2)
@@ -42,11 +42,13 @@ def load_view():
     with col2:
         data_heat()
     viz_rank_university()
+    national()
+    display_map_leafmap()
 
 
 def display_factor():
     st.markdown("""
-    ### Répartition des effectifs diplômés sortant et entrant sur le marché du travail comme salarié
+    ### Répartition des effectifs diplômés sortant et entrant sur le marché du travail en salariat
     """)
     # Chargement des données
     df = pd.read_csv("./data/esr_intersup_nettoye.csv")
@@ -118,9 +120,39 @@ def display_factor():
         st.markdown(f"**Le nombre total de spécialités étudiées est de :** **{df['Libellé du diplôme'].nunique():,}**")
         st.markdown(f"**Réparties entre :** **{df['Domaine disciplinaire'].nunique():,}** **domaines disciplinaires**")
 
+def display_majors() :
+     # Chargement des données
+    csv_file = "./data/esr_nettoye_avec_cities.csv"
+    df = pd.read_csv(csv_file)
+
+    st.markdown("### Présentation de la répartition des Libellé du diplôme par Domaine disciplinaire.")
+    
+    # Créer un selectbox pour choisir un Domaine disciplinaire
+    domaines = df['Domaine disciplinaire'].unique()
+    selected_domaine = st.selectbox("Sélectionnez un Domaine disciplinaire", sorted(domaines))
+
+    # Filtrer les données en fonction du Domaine disciplinaire sélectionné
+    df_filtered = df[df['Domaine disciplinaire'] == selected_domaine]
+
+    # Calculer le nombre de valeurs uniques pour le domaine disciplinaire sélectionné
+    unique_secteurs = df_filtered['Secteur disciplinaire'].nunique()
+    #unique_libelles_secteur = df_filtered['Libellé du secteur'].nunique()
+    unique_libelles_diplome = df_filtered['Libellé du diplôme'].nunique()
+
+    # Afficher les informations au-dessus du DataFrame
+    st.markdown(f"**Nombre de secteurs disciplinaires uniques pour '{selected_domaine}' :** {unique_secteurs}")
+    #st.markdown(f"**Nombre de libellés de secteur uniques pour '{selected_domaine}' :** {unique_libelles_secteur}")
+    st.markdown(f"**Nombre de libellés de diplôme uniques pour '{selected_domaine}' :** {unique_libelles_diplome}")
+
+    # Ne pas afficher les 11 dernières colonnes
+    df_filtered = df_filtered.iloc[:, :-11]
+
+    # Afficher le DataFrame filtré
+    st.dataframe(df_filtered)
 
 def display_map_leafmap():
-    st.header("Carte Interactive des Académies en France 4")
+    st.header("Carte Interactive des Académies en France")
+
     # Chargement des données
     csv_file = "./data/esr_nettoye_avec_cities.csv"
     df = pd.read_csv(csv_file)
@@ -138,10 +170,9 @@ def display_map_leafmap():
         return
 
     m = leafmap.Map(center=[46.603354, 1.888334], zoom=6)
-    m.add_points_from_xy(valid_geo_df, x="longitude", y="latitude", popup=["Académie", "Nombre de sortants"])
+    m.add_points_from_xy(valid_geo_df, x="longitude", y="latitude", popup=["Académie", "Nombre de sortants", "Nombre de poursuivants"])
     
-    m.to_streamlit(width=600, height=400)
-
+    m.to_streamlit(width=700, height=500)
 
 def display_corr_var():
     st.markdown("### Corrélation entre les variables\n ")
@@ -161,7 +192,6 @@ def display_corr_var():
 
     # Afficher la figure dans Streamlit
     st.pyplot(plt)
-
 
 def data_heat():
     st.markdown("### Rapport entre sortants et poursuivants à l'issue des formations étudiées\n ")  
@@ -195,7 +225,6 @@ def data_heat():
 
     # Affichage de la figure dans Streamlit
     st.pyplot(plt)
-
 
 def display_spread_time():
     st.markdown("### Espace temporel des données : millésimes des diplômes et analyses des taux d'emploi à la sortie des formations \n ")
@@ -246,103 +275,176 @@ def display_spread_time():
     # Affichage des graphiques dans Streamlit
     st.pyplot(fig)
 
-
 def viz_rank_university():
-    st.markdown("### Classement des Établissements en fonction du Nombre de Sortants Moyens par Formation")
-
+    
+    # Ajouter un graphique pour le nombre d'Établissements par Nombre de formations
+    st.markdown("### Répartition des établissements par nombre de formations")
     # Chargement des données
     csv_file = "./data/esr_intersup_nettoye.csv"
     df = pd.read_csv(csv_file)
 
-    # Calculer le nombre de formations uniques par établissement
+   # Calculer le nombre de formations uniques par établissement
     df_unique_formations = df.groupby('Établissement')['Domaine disciplinaire'].nunique().reset_index()
     df_unique_formations.rename(columns={'Domaine disciplinaire': 'Nombre de formations uniques'}, inplace=True)
+    col1, col2 = st.columns(2)  
+    with col1:
+        # CSS pour centrer verticalement le contenu de col1
+        st.markdown(
+            """
+            <style>
+            .centered-content {
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                height: 100%;
+            }
+            </style>
+            """,
+            unsafe_allow_html=True,
+        )
+        with st.container():
+            st.markdown('<div class="centered-content">', unsafe_allow_html=True)
+        
+            # Afficher un sélecteur pour choisir le nombre de formations au-dessus du DataFrame
+            nombre_formations = st.selectbox(
+                "**Sélectionnez le nombre de formations**",
+                sorted(df_unique_formations['Nombre de formations uniques'].unique())
+            )
 
-    # Vérification pour s'assurer que la colonne est bien créée
-    st.write("Nombre de formations uniques par établissement:", df_unique_formations.head())
+            # Filtrer les établissements en fonction du nombre de formations sélectionné
+            df_filtered = df_unique_formations[df_unique_formations['Nombre de formations uniques'] == nombre_formations]
 
-    # Calculer le total des "Nombre de sortants" et "Nombre de poursuivants" par établissement
-    df_grouped = df.groupby('Établissement').agg({
-    'Nombre de poursuivants': 'sum',
-    'Nombre de sortants': 'sum'
-    }).reset_index()
+            # Afficher le DataFrame filtré
+            st.write(f"Établissements avec exactement {nombre_formations} formation(s) unique(s):", df_filtered)
 
-    # Ajouter la colonne "Nombre de formations uniques"
-    df_grouped = pd.merge(df_grouped, df_unique_formations, on='Établissement', how='left')
+            # Calculer le total des "Nombre de sortants" et "Nombre de poursuivants" par établissement
+            df_grouped = df.groupby('Établissement').agg({
+                'Nombre de poursuivants': 'sum',
+                'Nombre de sortants': 'sum'
+            }).reset_index()
 
-    # Vérification de la fusion des DataFrames avec un scroller
-    st.markdown("### DataFrame après fusion")
-    st.dataframe(df_grouped)
+            # Ajouter la colonne "Nombre de formations uniques"
+            df_grouped = pd.merge(df_grouped, df_unique_formations, on='Établissement', how='left')
 
-    # Calculer le nombre moyen de sortants par formation
-    df_grouped['Nombre moyen de sortants par formation'] = df_grouped['Nombre de sortants'] / df_grouped['Nombre de formations uniques']
+            st.markdown('</div>', unsafe_allow_html=True)
 
-    # Vérification du calcul avec un scroller
-    st.markdown("### Nombre moyen de sortants par formation")
-    st.dataframe(df_grouped[['Établissement', 'Nombre moyen de sortants par formation']])
+    formations_count = df_grouped['Nombre de formations uniques'].value_counts().reset_index()
+    formations_count.columns = ['Nombre de formations', 'Nombre d\'établissements']
 
-    # Ajouter une colonne pour le total des sortants et poursuivants
-    df_grouped['Total Sortants + Poursuivants'] = df_grouped['Nombre de poursuivants'] + df_grouped['Nombre de sortants']
-
-    # Remplacer les NaN par 0 ou une petite valeur positive pour éviter les erreurs
-    df_grouped['Nombre moyen de sortants par formation'].fillna(0, inplace=True)
-
-    # Filtrer les établissements où le total est 0 pour éviter d'afficher des points de taille 0
-    df_grouped = df_grouped[df_grouped['Total Sortants + Poursuivants'] > 0]
     
-    # Trier par ordre décroissant du nombre moyen de sortants par formation
-    df_grouped = df_grouped.sort_values(by='Nombre moyen de sortants par formation', ascending=False)
+    with col2:
+        fig_formations = px.bar(
+            formations_count, 
+            x='Nombre de formations', 
+            y="Nombre d'établissements", 
+            title="Nombre d'Établissements par nombre de Formations",
+            labels={
+                'Nombre de formations': "Nombre de Formations", 
+                "Nombre d'établissements": "Nombre d'Établissements"
+            }, 
+            color_discrete_sequence=['#77264b']  # Couleur aubergine 
+        )
+        st.plotly_chart(fig_formations)
 
-    # Créer une visualisation avec Plotly pour le classement des établissements
-    fig = px.scatter(df_grouped, 
-                     x='Total Sortants + Poursuivants', 
-                     y='Établissement', 
-                     size='Nombre moyen de sortants par formation', 
-                     color='Nombre moyen de sortants par formation',
-                     hover_name='Établissement',
-                     title="Classement des Établissements en fonction du Nombre Moyen de Sortants par Formation",
-                     labels={
-                         'Total Sortants + Poursuivants': "Total Sortants + Poursuivants",
-                         'Établissement': "Établissement",
-                         'Nombre moyen de sortants par formation': "Nombre Moyen de Sortants par Formation"
-                     })
 
-    # Mettre à jour la disposition pour améliorer l'affichage
-    fig.update_traces(marker=dict(line=dict(width=1, color='DarkSlateGrey')), selector=dict(mode='markers'))
-    fig.update_layout(height=600, width=800, margin=dict(l=0, r=0, t=30, b=0))
+    col1, col2 = st.columns(2)  
+    with col1 :
+        # Calculer le nombre moyen de sortants par formation
+        df_grouped['Nombre moyen de sortants par formation'] = df_grouped['Nombre de sortants'] / df_grouped['Nombre de formations uniques']
+
+        # Vérification du calcul avec un scroller
+        st.markdown("### Nombre moyen de sortants par formation")
+        # Arrondir le 'Nombre moyen de sortants par formation' à l'entier le plus proche
+        df_grouped['Nombre moyen de sortants par formation'] = df_grouped['Nombre moyen de sortants par formation'].round()
+        # Trier le DataFrame par 'Nombre moyen de sortants par formation' en ordre croissant
+        df_sorted = df_grouped[['Établissement', 'Nombre moyen de sortants par formation']].sort_values(by='Nombre moyen de sortants par formation', ascending=True)
+
+        # Afficher le DataFrame trié
+        st.dataframe(df_sorted)
+
     
-    # Afficher la figure dans Streamlit
-    st.plotly_chart(fig)
+    with col2 :
+        # Ajouter une colonne pour le total des sortants et poursuivants
+        df_grouped['Total Sortants + Poursuivants'] = df_grouped['Nombre de poursuivants'] + df_grouped['Nombre de sortants']
 
-    # Nouvelle visualisation : Nombre de Sortants par Région
-    st.markdown("### Nombre de Sortants par Région")
-    df_region = df.groupby('Région')['Nombre de sortants'].sum().reset_index()
+        # Remplacer les NaN par 0 ou une petite valeur positive pour éviter les erreurs
+        df_grouped['Nombre moyen de sortants par formation'].fillna(0, inplace=True)
 
-    fig_region = px.bar(df_region, 
-                        x='Région', 
-                        y='Nombre de sortants', 
-                        color='Nombre de sortants',
-                        title="Nombre de Sortants par Région",
-                        labels={'Nombre de sortants': "Nombre de Sortants", 'Région': "Région"})
+        # Filtrer les établissements où le total est 0 pour éviter d'afficher des points de taille 0
+        df_grouped = df_grouped[df_grouped['Total Sortants + Poursuivants'] > 0]
+    
+        # Trier par ordre décroissant du nombre moyen de sortants par formation
+        df_grouped = df_grouped.sort_values(by='Nombre moyen de sortants par formation', ascending=False)
+    
+        st.markdown("### Classement des Établissements en fonction du Nombre moyen de Sortants par Formation")
+        # Créer une visualisation avec Plotly pour le classement des établissements
+        fig = px.scatter(df_grouped, 
+                         x='Établissement', 
+                         y='Total Sortants + Poursuivants', 
+                         size='Nombre moyen de sortants par formation', 
+                         color='Nombre moyen de sortants par formation',
+                         hover_name='Établissement',
+                         title="Classement des Établissements en fonction du Nombre Moyen de Sortants par Formation",
+                         labels={
+                             'Total Sortants + Poursuivants': "Total Sortants + Poursuivants",
+                             'Établissement': "Établissement",
+                             'Nombre moyen de sortants par formation': "Nombre Moyen de Sortants par Formation"
+                        },color_continuous_scale=["#e1f5c4", "#abc837", "#629e00"])# Palette de verts)  # Couleur verte spécifiée
 
-    fig_region.update_layout(height=600, width=800, margin=dict(l=0, r=0, t=30, b=0))
-    st.plotly_chart(fig_region)
+        # Mettre à jour la disposition pour améliorer l'affichage
+        fig.update_traces(marker=dict(line=dict(width=1, color='DarkSlateGrey')), selector=dict(mode='markers'))
+        fig.update_layout(height=600, width=800, margin=dict(l=0, r=0, t=30, b=0))
+    
+        # Afficher la figure dans Streamlit
+        st.plotly_chart(fig)
 
-    # Nouvelle visualisation : Nombre de Sortants par Académie
-    st.markdown("### Nombre de Sortants par Académie")
-    df_academie = df.groupby('Académie')['Nombre de sortants'].sum().reset_index()
+    # Créer deux colonnes pour afficher les graphiques côte à côte
+    col1, col2 = st.columns(2)
 
-    fig_academie = px.bar(df_academie, 
-                          x='Académie', 
-                          y='Nombre de sortants', 
-                          color='Nombre de sortants',
-                          title="Nombre de Sortants par Académie",
-                          labels={'Nombre de sortants': "Nombre de Sortants", 'Académie': "Académie"})
+# Première colonne: Nombre de Sortants par Région
+    with col1:
+        st.markdown("### Nombre de Sortants par Région")
+        df_region = df.groupby('Région')['Nombre de sortants'].sum().reset_index()
+        df_region = df_region.sort_values(by='Nombre de sortants', ascending=False)  # Trier par ordre décroissant
+        fig_region = px.bar(df_region, 
+                            x='Région', 
+                            y='Nombre de sortants', 
+                            color='Nombre de sortants',
+                            title="Nombre de Sortants par Région",
+                            labels={'Nombre de sortants': "Nombre de Sortants", 'Région': "Région"},color_continuous_scale=["#f0e1ea", "#ab5676", "#77264b"])
 
-    fig_academie.update_layout(height=600, width=800, margin=dict(l=0, r=0, t=30, b=0))
-    st.plotly_chart(fig_academie)
+        fig_region.update_layout(height=600, margin=dict(l=0, r=0, t=30, b=0))
+        st.plotly_chart(fig_region)
+
+# Deuxième colonne: Nombre de Sortants par Académie
+    with col2:
+        st.markdown("### Nombre de Sortants par Académie")
+        df_academie = df.groupby('Académie')['Nombre de sortants'].sum().reset_index()
+        df_academie = df_academie.sort_values(by='Nombre de sortants', ascending=False)  # Trier par ordre décroissant
+        fig_academie = px.bar(df_academie, 
+                              x='Académie', 
+                              y='Nombre de sortants', 
+                              color='Nombre de sortants',
+                              title="Nombre de Sortants par Académie",
+                              labels={'Nombre de sortants': "Nombre de Sortants", 'Académie': "Académie"},
+                              color_continuous_scale=["#f0e1ea", "#ab5676", "#77264b"]  # Couleur pourpre/violet
+                            )
+
+        fig_academie.update_layout(height=600, margin=dict(l=0, r=0, t=30, b=0))
+        st.plotly_chart(fig_academie)
+
+def national():
+    st.header("Cas hors norme : les formations nationales auxquelles ne sont affectées aucune formation ni académie")
+    # Chargement des données
+    df = pd.read_csv("./data/esr_intersup_nettoye.csv")
+    df_national = df[df["Académie"] == "National"]
+    st.write(f"Le DataFramecorrespondant contient {df_national.shape[0]} lignes et {df_national.shape[1]} colonnes.")
+    st.dataframe(df_national)
+
 
 
 # Exécution des fonctions avec gestion des états
 if __name__ == "__main__":
     load_view()
+    national()
+    display_map_leafmap()

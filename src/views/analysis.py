@@ -203,6 +203,9 @@ def viz_map_ranking():
     # Calculer le taux d'emploi moyen par région
     taux_emploi_region = df.groupby('Région')['Taux d\'emploi salarié en France'].mean().reset_index()
     
+    # Arrondir les résultats à deux chiffres après la virgule
+    taux_emploi_region['Taux d\'emploi salarié en France'] = taux_emploi_region['Taux d\'emploi salarié en France'].round(2)
+
     # Trouver le libellé de discipline le plus significatif par région
     top_discipline_region = df.loc[df.groupby('Région')['Total'].idxmax()][['Région', 'Libellé du diplôme', 'Total']]
 
@@ -386,7 +389,7 @@ def viz_rank_university_avge():
     
     # Trier par ordre décroissant du nombre moyen de sortants par formation
     df_grouped = df_grouped.sort_values(by='Nombre moyen de sortants par formation', ascending=False)
-
+    st.write = ("ok")
     # Créer une visualisation avec Plotly
     fig = px.scatter(df_grouped, 
                      x='Total Sortants + Poursuivants', 
