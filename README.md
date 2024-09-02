@@ -7,6 +7,8 @@
 
 *Bilel O. : bilel@datarockstars.ai*
 
+*Sybille DL. : sybille@hotmail.fr*
+
 ## Démarrage
 
 - Naviguez jusqu'à ce dossier : `cd projet-fil-rouge-{username_github}`

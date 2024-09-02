@@ -1,29 +1,15 @@
-#libraries
+#libraries dont erreur sur #streamlit.components.v1 : htmlpip
 altair
-base64
-datetime
 folium 
-folium.plugins
-geopandas
-hashlib
-json 
-leafmap.foliumap 
+geopandas 
+leafmap
 matplotlib 
-matplotlib.pyplot
-numpy 
 pandas 
-PIL 
-plotly.express 
+Pillow
+plotly
 pydeck 
-random 
-scikit_learn
+scikit-learn
 seaborn 
 setuptools
-sqlite3 
 streamlit
-streamlit.components.v1 :html
 streamlit_folium
-time
-unittest
-urllib.parse
-utils

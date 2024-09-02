@@ -37,10 +37,10 @@ class Session:
             db = Database()
             db.execute(f"INSERT INTO users (email,password) VALUES ('{self.email}', '{self.hash()}')")
             db.commit()
-            print("User have been created")
+            print("User has been created")
             return True
         else:
-            print("User already exist on DB")
+            print("User already exists in DB")
             return False
 
     def persist(self):
