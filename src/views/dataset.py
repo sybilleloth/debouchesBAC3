@@ -44,6 +44,7 @@ def load_view():
     viz_rank_university()
     national()
     display_map_leafmap()
+    map()
 
 
 def display_factor():
@@ -156,23 +157,26 @@ def display_map_leafmap():
     # Chargement des données
     csv_file = "./data/esr_nettoye_avec_cities.csv"
     df = pd.read_csv(csv_file)
-
+    st.write("ok1")
     st.markdown("### Carte Interactive des Académies en France\n Cette carte du monde présente la répartition géographique de l'ensemble des lignes du dataset. Il vous suffit de régler le zoom pour visualiser les DROM-COM.")
-    
+    st.write("ok2!")
     # Filtrer les coordonnées valides
     valid_geo_df = df[
         df['latitude'].between(-90, 90) &
         df['longitude'].between(-180, 180)
     ]
-
+    st.write("ok3!")
     if valid_geo_df.empty:
         st.error("Aucune donnée avec des coordonnées valides n'a été trouvée.")
         return
-
+    st.write("ok4!")
+    #st.write(valid_geo_df[['longitude', 'latitude']].describe()) vérifier que les données gps sont ok dans leur prise en charge
     m = leafmap.Map(center=[46.603354, 1.888334], zoom=6)
+    st.write("ok5!")
     m.add_points_from_xy(valid_geo_df, x="longitude", y="latitude", popup=["Académie", "Nombre de sortants", "Nombre de poursuivants"])
-    
+    st.write("ok6!")    
     m.to_streamlit(width=700, height=500)
+    st.write("ok7!")
 
 def display_corr_var():
     st.markdown("### Corrélation entre les variables\n ")
@@ -441,7 +445,16 @@ def national():
     st.write(f"Le DataFramecorrespondant contient {df_national.shape[0]} lignes et {df_national.shape[1]} colonnes.")
     st.dataframe(df_national)
 
+def map(): #test carte simple
+    st.header("Carte simple")
 
+    # Chargement des données
+    
+    st.write("ok1")
+    
+    m = leafmap.Map(center=[46.603354, 1.888334], zoom=6)
+    m.to_streamlit(width=700, height=500)
+    st.write("ok2")
 
 # Exécution des fonctions avec gestion des états
 if __name__ == "__main__":

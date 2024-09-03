@@ -29,7 +29,7 @@ def load_view():
         viz_map_ranking()
     with col4:
         viz_ranking_region()
-    viz_employ_rate__diploma()
+    viz_employ_rate_diploma_grouped()
     viz_rank_university()
     viz_rank_university_avge()
 
@@ -101,14 +101,15 @@ def viz_speciality_diploma_type():
     
     # Filtrer le DataFrame en fonction des types de diplôme sélectionnés
     df_filtered = df[df['Type de diplôme'].isin(types_diplome)]
-    
+    print(df_filtered['Domaine disciplinaire'].nunique())
+    print(df_filtered['Libellé du diplôme'].nunique())
     # Présenter le nombre de disciplines sur l'ensemble du territoire et pour chacune, le nombre de spécialités
     st.write(f"Le nombre de domaines de discipline enseignés en France pour les types de diplôme sélectionnés est de : {df_filtered['Domaine disciplinaire'].nunique()} correspondant à {df_filtered['Libellé du diplôme'].nunique()} spécialités")
-    
+   
     # Grouper par région et compter les libellés de diplôme
     libelle_count = df_filtered.groupby('Région')['Libellé du diplôme'].nunique()
     st.write(f"Nombre de spécialités dispensées avec un diplôme Bac +3 par région :")
-    #st.write(libelle_count)
+    st.write(libelle_count)
     
     # Grouper par région et compter les valeurs uniques de "Domaine disciplinaire"
     domaine_count = df_filtered.groupby('Région')['Domaine disciplinaire'].nunique()
@@ -120,6 +121,9 @@ def viz_speciality_diploma_type():
     # Trier le DataFrame par 'Nombre de libellés de diplôme' en ordre descendant
     combined_df = combined_df.sort_values(by='Nombre de libellés de diplôme', ascending=False)
     
+    # Calculer la moyenne nationale
+    moyenne_nationale = combined_df['Nombre de libellés de diplôme'].mean()
+    
     # Créer un graphique à barres interactif avec Plotly
     fig = px.bar(combined_df, 
                  x='Région', 
@@ -129,6 +133,29 @@ def viz_speciality_diploma_type():
                  title='Nombre de libellés de diplôme par région')
     
     fig.update_layout(xaxis_title='Région', yaxis_title='Nombre de libellés de diplôme')
+
+    # Ajouter une ligne représentant la moyenne nationale sur toute la largeur du graphe
+    fig.add_shape(
+        type='line',
+        x0=-0.5,  # Positionner la ligne légèrement avant la première barre
+        x1=len(combined_df) - 0.5,  # Positionner la ligne légèrement après la dernière barre
+        y0=moyenne_nationale,
+        y1=moyenne_nationale,
+        line=dict(color='RoyalBlue', width=2, dash='dash'),
+        xref='x',  # Référence par rapport à l'axe des x
+        yref='y'   # Référence par rapport à l'axe des y
+    )
+    
+    # Ajouter une annotation pour indiquer la moyenne nationale
+    fig.add_annotation(
+        x=0.5,  # Position relative à l'axe des x, de 0 à 1
+        y=moyenne_nationale,
+        text=f"Moyenne nationale: {moyenne_nationale:.2f}",
+        showarrow=False,
+        yshift=10,
+        xref="paper",  # Position relative par rapport à l'ensemble du graphique
+        yref="y"       # Position en termes de valeur y
+    )
     
     # Afficher le graphique dans Streamlit
     st.plotly_chart(fig)
@@ -185,9 +212,6 @@ def viz_ranking_speciality():
     # Afficher le graphique dans Streamlit
     st.plotly_chart(fig)
 
-
-
-
 def viz_map_ranking():
     # Chargement des données
     csv_file = "./data/esr_intersup_nettoye.csv"
@@ -237,8 +261,6 @@ def viz_map_ranking():
     # Afficher la carte dans Streamlit
     st.plotly_chart(fig)
 
-
-
 def viz_ranking_region():
     # Chargement des données
     csv_file = "./data/esr_intersup_nettoye.csv"
@@ -261,52 +283,6 @@ def viz_ranking_region():
 
     # Afficher le graphique dans Streamlit
     st.plotly_chart(fig)
-
-
-def viz_employ_rate__diploma() :
-    st.markdown("### Taux d'emploi salarié en France moyen par libellé du diplôme")
-
-    # Chargement des données
-    csv_file = "./data/esr_intersup_nettoye.csv"
-    df = pd.read_csv(csv_file)
-
-    # Calculer le taux d'emploi moyen par Libellé du diplôme
-    taux_emploi_moyen = df.groupby('Libellé du diplôme')['Taux d\'emploi salarié en France'].mean().reset_index()
-
-    # Tri des résultats pour un meilleur affichage
-    taux_emploi_moyen = taux_emploi_moyen.sort_values(by='Taux d\'emploi salarié en France', ascending=False)
-
-    # Création de la figure et des axes
-    fig, ax = plt.subplots(figsize=(12, 8))
-    
-    # Visualisation avec seaborn
-    sns.barplot(x='Taux d\'emploi salarié en France', y='Libellé du diplôme', data=taux_emploi_moyen, palette='viridis', ax=ax)
-
-    # Ajuster l'échelle de l'axe x pour s'adapter aux données
-    ax.set_xlim([taux_emploi_moyen['Taux d\'emploi salarié en France'].min() * 0.9, 
-                 taux_emploi_moyen['Taux d\'emploi salarié en France'].max() * 1.1])
-
-    # Supprimer le label de l'axe des ordonnées
-    ax.set_ylabel('')
-
-    # Ajuster l'affichage des étiquettes de l'axe y (Libellé du diplôme)
-    ax.set_yticklabels(ax.get_yticklabels(), rotation=0, ha='right', fontsize=10, wrap=True)
-
-    # Ajuster les étiquettes pour qu'elles soient sur 3 lignes
-    for label in ax.get_yticklabels():
-        label.set_text('\n'.join(label.get_text().split(' ')))
-
-    # Appliquer les ajustements de layout pour gérer l'espace
-    plt.tight_layout()
-
-    # Afficher la figure dans Streamlit
-    st.pyplot(fig)
-
-    # Créer la légende après le graphique
-    st.markdown("### Légende")
-    for index, row in taux_emploi_moyen.iterrows():
-        st.write(f"{row['Libellé du diplôme']}: {row['Taux d\'emploi salarié en France']:.2f}%")
-
 
 def viz_rank_university():
         st.markdown("### Classement des Établissements en fonction du Nombre de Sortants et Poursuivants")
@@ -355,6 +331,70 @@ def viz_rank_university():
     # Afficher la figure dans Streamlit
         st.plotly_chart(fig)
 
+def viz_employ_rate_diploma_grouped():
+    st.markdown("### Taux d'emploi salarié en France moyen par libellé du diplôme")
+
+    # Chargement des données
+    csv_file = "./data/esr_intersup_nettoye.csv"
+    df = pd.read_csv(csv_file)
+
+    # Calculer le taux d'emploi moyen par Libellé du diplôme
+    taux_emploi_moyen = df.groupby('Libellé du diplôme')['Taux d\'emploi salarié en France'].mean().reset_index()
+
+    # Créer des tranches de taux d'emploi
+    bins = [0, 20, 40, 60, 80, 100]
+    labels = ['0-20%', '20-40%', '40-60%', '60-80%', '80-100%']
+    taux_emploi_moyen['Tranche'] = pd.cut(taux_emploi_moyen['Taux d\'emploi salarié en France'], bins=bins, labels=labels, right=False)
+    
+    # Compter le nombre de libellés de diplôme dans chaque tranche
+    tranche_count = taux_emploi_moyen['Tranche'].value_counts().sort_index()
+
+    # Créer un DataFrame pour le graphique
+    tranche_df = pd.DataFrame({
+        'Tranche': tranche_count.index,
+        'Nombre de libellés de diplôme': tranche_count.values
+    })
+
+    # Création de la figure et des axes pour le graphique général
+    fig, ax = plt.subplots(figsize=(10, 6))
+    
+    # Visualisation avec seaborn
+    sns.barplot(x='Tranche', y='Nombre de libellés de diplôme', data=tranche_df, palette='BuGn', ax=ax)
+
+    # Ajouter les étiquettes sur les barres
+    for i in ax.containers:
+        ax.bar_label(i, fmt='%d', label_type='edge')
+
+    # Ajuster l'échelle de l'axe y pour s'adapter aux données
+    ax.set_ylim(0, tranche_df['Nombre de libellés de diplôme'].max() * 1.1)
+
+    # Ajouter les labels et le titre
+    ax.set_xlabel('Taux d\'emploi salarié en France (%)')
+    ax.set_ylabel('Nombre de libellés de diplôme')
+    ax.set_title('Répartition des diplômes par tranche de taux d\'emploi salarié')
+
+    # Appliquer les ajustements de layout pour gérer l'espace
+    plt.tight_layout()
+    
+    col7, col8 = st.columns([1.2,0.8])
+    with col7 :
+        # Afficher la figure dans Streamlit
+        st.pyplot(fig)
+    with col8 :
+    # Ajouter une selectbox pour sélectionner une tranche spécifique
+        selected_tranche = st.selectbox("Sélectionnez une tranche pour voir les détails", labels)
+
+    # Filtrer les diplômes selon la tranche sélectionnée
+        filtered_df = taux_emploi_moyen[taux_emploi_moyen['Tranche'] == selected_tranche]
+
+    # Afficher les détails des diplômes dans la tranche sélectionnée sous forme de DataFrame
+        st.markdown(f"### Détail des diplômes dans la tranche {selected_tranche}")
+        if not filtered_df.empty:
+            filtered_df_round=filtered_df[['Libellé du diplôme', 'Taux d\'emploi salarié en France']].round(2)
+            st.dataframe(filtered_df_round[['Libellé du diplôme', 'Taux d\'emploi salarié en France']])
+        else:
+            st.write("Aucun diplôme dans cette tranche.")
+
 def viz_rank_university_avge():
     st.markdown("### Classement des Établissements en fonction du Nombre de Sortants Moyens par Formation")
 
@@ -389,11 +429,11 @@ def viz_rank_university_avge():
     
     # Trier par ordre décroissant du nombre moyen de sortants par formation
     df_grouped = df_grouped.sort_values(by='Nombre moyen de sortants par formation', ascending=False)
-    st.write = ("ok")
-    # Créer une visualisation avec Plotly
+    
+    # Créer une visualisation avec Plotly en transposant les axes
     fig = px.scatter(df_grouped, 
-                     x='Total Sortants + Poursuivants', 
-                     y='Établissement', 
+                     x=df_grouped['Établissement'],  # Établissements sur l'axe des x
+                     y='Total Sortants + Poursuivants',  # Total Sortants + Poursuivants sur l'axe des y
                      size='Nombre moyen de sortants par formation', 
                      color='Nombre moyen de sortants par formation',
                      hover_name='Établissement',
@@ -406,7 +446,27 @@ def viz_rank_university_avge():
 
     # Mettre à jour la disposition pour améliorer l'affichage
     fig.update_traces(marker=dict(line=dict(width=1, color='DarkSlateGrey')), selector=dict(mode='markers'))
-    fig.update_layout(height=600, width=800, margin=dict(l=0, r=0, t=30, b=0))
+    
+    # Déplacer la légende en haut du graphique et ajuster la largeur du graphique
+    fig.update_layout(
+        height=600,
+        width=1200,  # Augmenter la largeur du graphique
+        margin=dict(l=0, r=0, t=30, b=100),
+        xaxis={'tickangle': 45},
+        legend=dict(
+            orientation="h",  # Horizontal layout
+            yanchor="bottom",  # Ancrer au bas du cadre de légende
+            y=1.02,  # Positionner légèrement au-dessus du graphique
+            xanchor="center",  # Centrer la légende
+            x=0.5  # Centrer la légende horizontalement
+        )
+    )
+
+    # Afficher la figure dans Streamlit
+    st.plotly_chart(fig)
+
+
+
 
 # Appeler la fonction pour lancer l'application Streamlit
 if __name__ == "__main__":
@@ -415,6 +475,6 @@ if __name__ == "__main__":
     viz_speciality_diploma_type()
     viz_map_ranking()
     viz_ranking_region()
-    viz_employ_rate__diploma()
+    viz_employ_rate_diploma_grouped()
     viz_rank_university()
     viz_rank_university_avge()

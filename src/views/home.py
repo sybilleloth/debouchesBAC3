@@ -19,7 +19,7 @@ def load_view():
 
         # Affichage de la vidéo avec autoplay
         video_html = f"""
-            <video width="100%" height="auto" controls autoplay>
+            <video width="70%" height="auto" controls autoplay>
                 <source src="data:video/mp4;base64,{video_base64}" type="video/mp4">
                 Your browser does not support the video tag.
             </video>
@@ -50,6 +50,30 @@ def load_view():
      
         In  a few words : does the French educational system lead to work all over France equally, are there some favorable universities and how high is the rate of students resuming their studies when they graduate with a BAC + 3 ? 
         """)
+        # Bouton pour afficher la version en français
+        if st.button("lire la version en français"):
+            # Affichage du pop-up avec la version française
+            with st.expander("Version en français"):
+                st.markdown("""
+                ### Tour d'horizon des débouchés des formations licences professionnelles, Master LMD et Master MEEF dispensées par les établissements d'enseignement supérieur
+            
+                #### Auteur et éditeur de la présente investigation : Ministère français de l'Enseignement Supérieur et de la Recherche.
+            
+                Sur la base des données fournies par le Ministère de l'Enseignement Supérieur et de la Recherche, ces pages affichées à travers cette application Streamlit, 
+                nous aident à comprendre comment le système éducatif français est réparti sur toutes les régions françaises et les Antilles, et comment ils délivrent tous un 
+                diplôme ouvrant les portes du monde du travail.
 
+                Les pages d'analyse soulignent à quel point la gamme de matières et de majeures est vaste.
+
+                #### Hypothèses de l'enquête
+            
+                1. Évaluer l'exactitude des données fournies concernant la période de diplomation entre 2019 et 2021.
+                2. Nettoyer et conserver des données précises qui peuvent être efficaces pour l'analyse.
+                3. Acquérir une connaissance pertinente des données fournies conduisant à une conclusion valide confirmant la question initiale.
+                4. Analyser et explorer les données.
+                5. Visualiser et présenter la conclusion finale.
+
+                En quelques mots : le système éducatif français mène-t-il au travail de manière égale dans toute la France, y a-t-il des universités plus favorables et quel est le taux d'étudiants poursuivant leurs études lorsqu'ils obtiennent un BAC + 3 ?
+                """)
 if __name__ == "__main__":
     load_view()

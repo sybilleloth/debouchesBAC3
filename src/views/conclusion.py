@@ -4,7 +4,9 @@ import pydeck as pdk
 import base64
 import plotly.express as px
 import matplotlib.pyplot as plt
+
 def load_view():
+    
     # Chargement des données
     csv_file = "./data/esr_intersup_nettoye.csv"
     df = pd.read_csv(csv_file)
@@ -69,6 +71,7 @@ def load_view():
     with col4 : 
         top3_formation("Libellé du diplôme", "formations","Mois après la diplomation","temps nécessaire à la prise de poste en emploi")
     # Diviser la page en deux colonnes
+    st.subheader("Les régions championnes") 
     col5, col6 = st.columns(2)
     with col5 :
         maxi_poursuite()  
@@ -79,8 +82,7 @@ def load_view():
 def carte():
     st.header("Les marches du podium :")   
 
-
-# Chargement des données avec coordonnées
+    # Chargement des données avec coordonnées
     csv_filec = "./data/esr_nettoye_avec_cities.csv"
     dfc = pd.read_csv(csv_filec)
 
@@ -99,6 +101,10 @@ def carte():
         moyenne_sortants_academie=('Nombre de sortants', 'mean')
     ).reset_index()
 
+    # Arrondir les latitudes et longitudes à 6 chiffres après la virgule
+    df_academie['latitude'] = df_academie['latitude'].round(6)
+    df_academie['longitude'] = df_academie['longitude'].round(6)
+
     # Ajout d'une colonne pour le nombre moyen de sortants par libellé du diplôme
     df_academie['moyenne_sortants_par_diplome_academie'] = dfc.groupby(['Académie', 'Libellé du diplôme'])['Nombre de sortants'].mean().groupby('Académie').mean().values
 
@@ -106,14 +112,15 @@ def carte():
     st.write("Données de l'académie pour la carte:")
     st.write(df_academie.head())  # Affiche les premières lignes pour vérification
 
-# Préparation des données pour la visualisation
+    # Préparation des données pour la visualisation
     chart_data = df_academie[['Académie', 'latitude', 'longitude', 'moyenne_sortants_academie', 'moyenne_sortants_par_diplome_academie']].dropna()
-    st.write(chart_data.head()) #check à supprimer
-# Affichage de la carte avec pydeck
+    st.write(chart_data.head()) # check à supprimer
+
+    # Affichage de la carte avec pydeck
     st.pydeck_chart(
         pdk.Deck(
-            map_style=None,
-            #Centrage de la carte sur la latitude moyenne de tous les points de l'académie.
+            map_style='mapbox://styles/mapbox/light-v10',
+            # Centrage de la carte sur la latitude moyenne de tous les points de l'académie
             initial_view_state=pdk.ViewState(
                 latitude=chart_data['latitude'].mean(),
                 longitude=chart_data['longitude'].mean(),
@@ -130,15 +137,19 @@ def carte():
                     pickable=True,
                 ),
             ],
-            #affiche d'un point de données sur la carte. 
-                tooltip={
-                    "html": "<b>Académie:</b> {Académie}<br/><b>Moyenne Sortants par Académie:</b> {moyenne_sortants_academie}<br/><b>Moyenne Sortants par Diplôme par Académie:</b> {moyenne_sortants_par_diplome_academie}",
-                    "style": {"backgroundColor": "steelblue", "color": "red"}
+            # Affichage d'un point de données sur la carte
+            tooltip={
+                "html": "<b>Académie:</b> {Académie}<br/><b>Moyenne Sortants par Académie:</b> {moyenne_sortants_academie}<br/><b>Moyenne Sortants par Diplôme par Académie:</b> {moyenne_sortants_par_diplome_academie}",
+                "style": {"backgroundColor": "steelblue", "color": "white"}
             }
         )
     )
     
+
+    
 def top3_formation(criteria, texte1, cible, texte2):
+    #top3_formation("Libellé du diplôme", "formations","Taux d'emploi","taux d'emploi")
+    #top3_formation("Libellé du diplôme", "formations","Mois après la diplomation","temps nécessaire à la prise de poste en emploi")
     # Affiche les 3 formations avec le taux d'emploi le plus favorable pour chaque type de diplôme.
     # Chemin vers le fichier CSV
     csv_file = "./data/esr_intersup_nettoye.csv"
@@ -154,7 +165,10 @@ def top3_formation(criteria, texte1, cible, texte2):
     if cible == "Taux d'emploi" : 
         # Compter le nombre de formations avec un taux d'emploi de 100%
         formations_100 = df_filtered[df_filtered[cible] == 100].shape[0]
-    else :   formations_100 = df_filtered[df_filtered[cible] == 6].shape[0]
+    else :   
+        # Compter le nombre de formations avec une entrée sur le marché du travail de 6 mois
+        formations_100 = df_filtered[df_filtered[cible] == 6].shape[0]
+        
     print(formations_100)
 
 
@@ -169,7 +183,9 @@ def top3_formation(criteria, texte1, cible, texte2):
 
     for diplome in diplomes:
         df_diplome = df_filtered[df_filtered["Type de diplôme"] == diplome]
-        top_3_formations = df_diplome.sort_values(by=cible, ascending=False).head(3)
+        if cible == "Taux d'emploi" : 
+            top_3_formations = df_diplome.sort_values(by=cible, ascending=False).head(3)
+        else : top_3_formations = df_diplome.sort_values(by=cible, ascending=True).head(3)
         top_formations = pd.concat([top_formations, top_3_formations])
 
     # Vérification des données concaténées
@@ -230,7 +246,7 @@ def maxi_poursuite():
     top_regions = region_pursuit_rate.sort_values(by='Taux de poursuite', ascending=False).head(3)
 
     # Afficher les résultats
-    st.subheader("Les trois régions avec le plus fort taux de poursuite d'études après Bac +3")
+    st.markdown("Les trois régions avec le plus fort taux de poursuite d'études après Bac +3")
         
     # Créer un graphique avec les couleurs spécifiques et taille fixée
     fig, ax = plt.subplots(figsize=(8, 6))
@@ -264,7 +280,7 @@ def maxi_region():
     # Trier les régions par taux d'emploi décroissant et sélectionner les 3 premières
     top_regions = region_employment_rate.sort_values(by='Taux d\'emploi salarié en France', ascending=False).head(3)
 
-    st.subheader("Les 3 régions dont le taux d'emploi moyen est le plus favorable") 
+    st.markdown("Les 3 régions dont le taux d'emploi moyen est le plus favorable") 
     
     # Créer un graphique en pyramide (barh pour barres horizontales inversées) avec taille fixée
     fig, ax = plt.subplots(figsize=(8, 6))
