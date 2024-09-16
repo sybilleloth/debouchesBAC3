@@ -2,17 +2,21 @@ import streamlit as st
 import base64
 from streamlit.components.v1 import html
 
-from PATHS import NAVBAR_PATHS, SETTINGS
+from PATHS import NAVBAR_PATHS, SETTINGS #fichier correspondance entre titres du menu et nom des pages d'exécution et visualisation
 
 
-def inject_custom_css():
+def inject_custom_css(): #injection des styles CSS dans l'app par la lecture du chier css : styles puis en l'injectant dans le HTML de l'app via st.markdown avec le paramètre unsafe_allow_html=True
     with open('src/assets/styles.css') as f:
-        st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
+        st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True) 
+        # écrire du Markdown/html etc. dans l'application
+        #  enveloppage du contenu de styles.css dans <style> (balise) et l'injecte ensuite dans l'app
+        # unsafe_allow_html=True #rend brut l'html et le css dans l'app
 
-
-def navbar_component():
-    with open("src/assets/images/picto reglage sdl.png", "rb") as image_file:
-        image_as_base64 = base64.b64encode(image_file.read())
+def navbar_component(): #créer la barre de navigation dans STr. avec gestion dynamique des éléments de navigation et un menu déroulant pour les paramètres
+    # Elle utilise une combinaison de HTML, CSS, JavaScript et Streamlit 
+    with open("src/assets/images/picto reglage sdl.png", "rb") as image_file: #ouverture du fichier puis lecture en binaire 
+        image_as_base64 = base64.b64encode(image_file.read()) #encodage de l'image en base 64
+        #with donc fermeture du fichier
 
     navbar_items = ''
     for key, value in NAVBAR_PATHS.items():

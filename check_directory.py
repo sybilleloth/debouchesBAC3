@@ -1,4 +1,5 @@
-#vérifier l'état du fichier utilisateur
+#vérifier l'état du fichier utilisateur : nombre de connexions par utilisateur et état des connexions
+
 import sqlite3
 import pandas as pd
 
