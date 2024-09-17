@@ -11,6 +11,7 @@ def load_view():
         st.header('Des outils enthousiasmants :sparkles:')
         st.subheader (':one: Les pictos et les couleurs')
         st.markdown ("Les pictos et les codes de la charte graphique sont conçus maison à partir de l'outil ***Inkscape***.")
+        st.image('./src/assets/images/palette_color.png', width=400)
         st.write("")
         st.subheader (':two: Les vidéos')
         st.markdown ("Les vidéos sont produites par la communauté ***Pexels***.")
@@ -18,6 +19,7 @@ def load_view():
         st.write("Lien vers la vidéo de la page d'accueil : [Pexels Image](https://www.pexels.com/fr-fr/video/jeune-fille-ecrite-ecole-nombres-8088339/)")
         st.write("Lien vers la vidéo de la page de conclusion : [Pexels Image](https://www.pexels.com/fr-fr/video/femme-ecole-debout-porte-8284321/)")    
         st.subheader (':three: Les outils de code')
-        st.markdown ("La rédaction du code est réalisée en langage Python, SQL et Html sur l'éditeur de code ***Visual Studio***.")
+        st.markdown ("La rédaction du code est réalisée en langage Python (v. 3.12.3), SQL et Html sur l'éditeur de code ***Visual Studio***.")
+        st.markdown ("Le versioning est géré sur ***github***.")
 if __name__ == "__main__":
     load_view()

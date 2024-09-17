@@ -1,64 +1,68 @@
 import streamlit as st
-from streamlit_folium import folium_static#, st_folium  Importer folium_static
-from streamlit.components.v1 import html
+import folium
+from streamlit_folium import st_folium  #folium_static, Importer folium_static
 import pandas as pd
 import numpy as np
 
-#import folium #https://python-visualization.github.io/folium/latest/getting_started.html ou https://folium.streamlit.app/
-#from folium.plugins import MarkerCluster
 import plotly.express as px
 import matplotlib.pyplot as plt
 import seaborn as sns
 import leafmap.foliumap as leafmap
+import pydeck as pdk
+
 
 
 def load_view():
-    # chargement dataset
-    csv_file = "./data/esr_intersup_nettoye.csv"
+        # chargement dataset nettoyé
+    csv_file = "./data/esr_intersup_nettoye 2024_09.csv"
     try:
         df = pd.read_csv(csv_file)
         print("Fichier chargé avec succès.")
         df = df
     except FileNotFoundError:
         print(f"Le fichier {csv_file} est introuvable.")
-        
     except Exception as e:
         print(f"Une erreur est survenue lors du chargement du fichier: {e}")
+
+        # chargement dataset nettoyé avec coordonnées gps pour affichage de carte
+    csv_file = "./data/esr_nettoye_avec_cities 2024_09.csv"
+    df_cities = pd.read_csv(csv_file)
+    print("Fichier avec coordonnées gps chargé avec succès.")
+    df_cities = df_cities
+    
   
-# affichage et appel pour la vue de la page dataset
+# affichage et appel pour la vue de la page dataset et appel des fonctions
     st.title(':label: Présentation du jeu de données nettoyé')
     st.markdown("""
     ### Tableau et données 
     """)
     st.write(f"**Taille du jeu de données (lignes, colonnes):** {df.shape}")
     st.dataframe(df)
-    display_factor()
-    display_majors()
-    display_spread_time()
+    display_factor(df)
+    display_majors(df)
+    display_spread_time(df)
     st.header("Visualisations facilitant la prise de connaissance des données\n")
     col1, col2 = st.columns(2)
     with col1:
-        display_corr_var()
+        display_corr_var(df)
     with col2:
-        data_heat()
-    viz_rank_university()
-    national()
-    display_map_leafmap()
-    map()
-
-
-def display_factor():
-    st.markdown("""
-    ### Répartition des effectifs diplômés sortant et entrant sur le marché du travail en salariat
-    """)
-    # Chargement des données
-    df = pd.read_csv("./data/esr_intersup_nettoye.csv")
+        data_heat(df)
     
+    viz_rank_university(df)
+    
+    display_map_plotly(df_cities)
+
+
+def display_factor(df):
+    st.markdown("""
+    ### Répartition des effectifs entrant sur le marché du travail en salariat après une formation Bac + 3
+    """)
+        
     # Filtrer le DataFrame pour le premier graphique : "Tous domaines disciplinaires"
-    df_tous_domaines = df[(df["Domaine disciplinaire"] == "Tous domaines disciplinaires") & (df["Région"] == "National")]
+    df_tous_domaines = df[(df["Domaine disciplinaire"] == "Tous domaines disciplinaires")]
 
     # Filtrer le DataFrame pour le second graphique : Toutes les autres valeurs
-    df_autres_domaines = df[(df["Domaine disciplinaire"] != "Tous domaines disciplinaires") & (df["Région"] != "National")]
+    df_autres_domaines = df[(df["Domaine disciplinaire"] != "Tous domaines disciplinaires")]
     
     # Calculer les limites pour l'axe x du second graphique
     min_sortants = df_autres_domaines["Nombre de sortants"].min() - 10
@@ -68,10 +72,10 @@ def display_factor():
     fig, axes = plt.subplots(2, 1, figsize=(20, 10), sharex=False)  # Ne pas partager l'axe x
     
     # Définir la couleur pour le premier graphique (vert RVBA = #abc837ff)
-    custom_palette = {"National": "#abc837ff"}
+    #custom_palette = {"National": "#abc837ff"}
     
-    # Premier graphique (avec couleur personnalisée)
-    sns.boxplot(x="Nombre de sortants", y="Domaine disciplinaire", hue="Région", data=df_tous_domaines, ax=axes[0], palette=custom_palette)
+    # Premier graphique (avec couleur personnalisée)palette=custom_palette
+    sns.boxplot(x="Nombre de sortants", y="Domaine disciplinaire", hue="Région", data=df_tous_domaines, ax=axes[0] )
     axes[0].set_title("Graphique pour 'Tous domaines disciplinaires'")
     axes[0].legend_.remove()  # On enlève la légende du premier graphique
     
@@ -104,8 +108,8 @@ def display_factor():
     with col1:
         # Afficher le nombre de sortants globalement
         st.markdown(f"**Le nombre total d'étudiants sortant du cadre de l'enseignement est de :** **{total_sortants:,.0f}**".replace(',', ' '))
-        st.markdown(f"**Ce nombre se répartit entre le nombre de sortants titulaires d'un diplôme national sans région spécifique :** **{total_sortants_national:,.0f}**".replace(',', ' '))
-        st.markdown(f"**et le nombre de sortants distribués par région :** **{total_sortants_non_national:,.0f}**".replace(',', ' '))
+        #st.markdown(f"**Ce nombre se répartit entre le nombre de sortants titulaires d'un diplôme national sans région spécifique :** **{total_sortants_national:,.0f}**".replace(',', ' '))
+        #st.markdown(f"**et le nombre de sortants distribués par région :** **{total_sortants_non_national:,.0f}**".replace(',', ' '))
 
 
     # Ajouter la barre verticale dans une colonne centrale
@@ -121,16 +125,13 @@ def display_factor():
         st.markdown(f"**Le nombre total de spécialités étudiées est de :** **{df['Libellé du diplôme'].nunique():,}**")
         st.markdown(f"**Réparties entre :** **{df['Domaine disciplinaire'].nunique():,}** **domaines disciplinaires**")
 
-def display_majors() :
-     # Chargement des données
-    csv_file = "./data/esr_nettoye_avec_cities.csv"
-    df = pd.read_csv(csv_file)
+def display_majors(df) :
 
-    st.markdown("### Présentation de la répartition des Libellé du diplôme par Domaine disciplinaire.")
+    st.markdown("### Présentation de la répartition des libellés de diplôme par domaine disciplinaire.")
     
     # Créer un selectbox pour choisir un Domaine disciplinaire
     domaines = df['Domaine disciplinaire'].unique()
-    selected_domaine = st.selectbox("Sélectionnez un Domaine disciplinaire", sorted(domaines))
+    selected_domaine = st.selectbox("Sélectionnez un domaine disciplinaire", sorted(domaines))
 
     # Filtrer les données en fonction du Domaine disciplinaire sélectionné
     df_filtered = df[df['Domaine disciplinaire'] == selected_domaine]
@@ -151,38 +152,9 @@ def display_majors() :
     # Afficher le DataFrame filtré
     st.dataframe(df_filtered)
 
-def display_map_leafmap():
-    st.header("Carte Interactive des Académies en France")
-
-    # Chargement des données
-    csv_file = "./data/esr_nettoye_avec_cities.csv"
-    df = pd.read_csv(csv_file)
-    st.write("ok1")
-    st.markdown("### Carte Interactive des Académies en France\n Cette carte du monde présente la répartition géographique de l'ensemble des lignes du dataset. Il vous suffit de régler le zoom pour visualiser les DROM-COM.")
-    st.write("ok2!")
-    # Filtrer les coordonnées valides
-    valid_geo_df = df[
-        df['latitude'].between(-90, 90) &
-        df['longitude'].between(-180, 180)
-    ]
-    st.write("ok3!")
-    if valid_geo_df.empty:
-        st.error("Aucune donnée avec des coordonnées valides n'a été trouvée.")
-        return
-    st.write("ok4!")
-    #st.write(valid_geo_df[['longitude', 'latitude']].describe()) vérifier que les données gps sont ok dans leur prise en charge
-    m = leafmap.Map(center=[46.603354, 1.888334], zoom=6)
-    st.write("ok5!")
-    m.add_points_from_xy(valid_geo_df, x="longitude", y="latitude", popup=["Académie", "Nombre de sortants", "Nombre de poursuivants"])
-    st.write("ok6!")    
-    m.to_streamlit(width=700, height=500)
-    st.write("ok7!")
-
-def display_corr_var():
+def display_corr_var(df):
     st.markdown("### Corrélation entre les variables\n ")
-    # Chargement des données
-    csv_file = "./data/esr_intersup_nettoye.csv"
-    df = pd.read_csv(csv_file)
+    
     # Sélectionner uniquement les colonnes numériques pour le calcul de la corrélation
     numeric_var = df.select_dtypes(include=['float64', 'int64'])
 
@@ -197,13 +169,9 @@ def display_corr_var():
     # Afficher la figure dans Streamlit
     st.pyplot(plt)
 
-def data_heat():
+def data_heat(df):
     st.markdown("### Rapport entre sortants et poursuivants à l'issue des formations étudiées\n ")  
     
-    # Chargement des données
-    csv_file = "./data/esr_intersup_nettoye.csv"
-    df = pd.read_csv(csv_file)
-
     # Extraction des colonnes d'intérêt
     x = df["Nombre de poursuivants"]
     y = df["Nombre de sortants"]
@@ -230,13 +198,9 @@ def data_heat():
     # Affichage de la figure dans Streamlit
     st.pyplot(plt)
 
-def display_spread_time():
+def display_spread_time(df):
     st.markdown("### Espace temporel des données : millésimes des diplômes et analyses des taux d'emploi à la sortie des formations \n ")
-    
-    # Chargement des données
-    csv_file = "./data/esr_intersup_nettoye.csv"
-    df = pd.read_csv(csv_file)
-
+ 
     # Création de la figure avec deux sous-graphiques côte à côte
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 6))  # 1 ligne, 2 colonnes
 
@@ -279,16 +243,13 @@ def display_spread_time():
     # Affichage des graphiques dans Streamlit
     st.pyplot(fig)
 
-def viz_rank_university():
+def viz_rank_university(df):
     
-    # Ajouter un graphique pour le nombre d'Établissements par Nombre de formations
+    # Ajouter un graphique pour le nombre d'Etablissements par Nombre de formations
     st.markdown("### Répartition des établissements par nombre de formations")
-    # Chargement des données
-    csv_file = "./data/esr_intersup_nettoye.csv"
-    df = pd.read_csv(csv_file)
-
+    
    # Calculer le nombre de formations uniques par établissement
-    df_unique_formations = df.groupby('Établissement')['Domaine disciplinaire'].nunique().reset_index()
+    df_unique_formations = df.groupby('Etablissement')['Domaine disciplinaire'].nunique().reset_index()
     df_unique_formations.rename(columns={'Domaine disciplinaire': 'Nombre de formations uniques'}, inplace=True)
     col1, col2 = st.columns(2)  
     with col1:
@@ -319,16 +280,16 @@ def viz_rank_university():
             df_filtered = df_unique_formations[df_unique_formations['Nombre de formations uniques'] == nombre_formations]
 
             # Afficher le DataFrame filtré
-            st.write(f"Établissements avec exactement {nombre_formations} formation(s) unique(s):", df_filtered)
+            st.write(f"Etablissements avec exactement {nombre_formations} formation(s) unique(s):", df_filtered)
 
             # Calculer le total des "Nombre de sortants" et "Nombre de poursuivants" par établissement
-            df_grouped = df.groupby('Établissement').agg({
+            df_grouped = df.groupby('Etablissement').agg({
                 'Nombre de poursuivants': 'sum',
                 'Nombre de sortants': 'sum'
             }).reset_index()
 
             # Ajouter la colonne "Nombre de formations uniques"
-            df_grouped = pd.merge(df_grouped, df_unique_formations, on='Établissement', how='left')
+            df_grouped = pd.merge(df_grouped, df_unique_formations, on='Etablissement', how='left')
 
             st.markdown('</div>', unsafe_allow_html=True)
 
@@ -341,10 +302,10 @@ def viz_rank_university():
             formations_count, 
             x='Nombre de formations', 
             y="Nombre d'établissements", 
-            title="Nombre d'Établissements par nombre de Formations",
+            title="Nombre d'établissements par nombre de formations",
             labels={
                 'Nombre de formations': "Nombre de Formations", 
-                "Nombre d'établissements": "Nombre d'Établissements"
+                "Nombre d'établissements": "Nombre d'Etablissements"
             }, 
             color_discrete_sequence=['#77264b']  # Couleur aubergine 
         )
@@ -361,7 +322,7 @@ def viz_rank_university():
         # Arrondir le 'Nombre moyen de sortants par formation' à l'entier le plus proche
         df_grouped['Nombre moyen de sortants par formation'] = df_grouped['Nombre moyen de sortants par formation'].round()
         # Trier le DataFrame par 'Nombre moyen de sortants par formation' en ordre croissant
-        df_sorted = df_grouped[['Établissement', 'Nombre moyen de sortants par formation']].sort_values(by='Nombre moyen de sortants par formation', ascending=True)
+        df_sorted = df_grouped[['Etablissement', 'Nombre moyen de sortants par formation']].sort_values(by='Nombre moyen de sortants par formation', ascending=True)
 
         # Afficher le DataFrame trié
         st.dataframe(df_sorted)
@@ -380,18 +341,18 @@ def viz_rank_university():
         # Trier par ordre décroissant du nombre moyen de sortants par formation
         df_grouped = df_grouped.sort_values(by='Nombre moyen de sortants par formation', ascending=False)
     
-        st.markdown("### Classement des Établissements en fonction du Nombre moyen de Sortants par Formation")
+        st.markdown("### Classement des établissements en fonction du Nombre moyen de sortants par formation")
         # Créer une visualisation avec Plotly pour le classement des établissements
         fig = px.scatter(df_grouped, 
-                         x='Établissement', 
+                         x='Etablissement', 
                          y='Total Sortants + Poursuivants', 
                          size='Nombre moyen de sortants par formation', 
                          color='Nombre moyen de sortants par formation',
-                         hover_name='Établissement',
-                         title="Classement des Établissements en fonction du Nombre Moyen de Sortants par Formation",
+                         hover_name='Etablissement',
+                         title="Classement des établissements en fonction du nombre moyen de sortants par formation",
                          labels={
                              'Total Sortants + Poursuivants': "Total Sortants + Poursuivants",
-                             'Établissement': "Établissement",
+                             'Etablissement': "Etablissement",
                              'Nombre moyen de sortants par formation': "Nombre Moyen de Sortants par Formation"
                         },color_continuous_scale=["#e1f5c4", "#abc837", "#629e00"])# Palette de verts)  # Couleur verte spécifiée
 
@@ -437,27 +398,47 @@ def viz_rank_university():
         fig_academie.update_layout(height=600, margin=dict(l=0, r=0, t=30, b=0))
         st.plotly_chart(fig_academie)
 
-def national():
-    st.header("Cas hors norme : les formations nationales auxquelles ne sont affectées aucune formation ni académie")
-    # Chargement des données
-    df = pd.read_csv("./data/esr_intersup_nettoye.csv")
-    df_national = df[df["Académie"] == "National"]
-    st.write(f"Le DataFramecorrespondant contient {df_national.shape[0]} lignes et {df_national.shape[1]} colonnes.")
-    st.dataframe(df_national)
+def display_map_plotly(df_cities):
+    #st.header("Carte interactive des académies en France")
+    st.markdown("### Carte interactive des académies en France\n Cette carte du monde présente la répartition géographique des lignes du jeu de données. Il vous suffit de régler le zoom pour visualiser les DROM-COM.")
 
-def map(): #test carte simple
-    st.header("Carte simple")
+    # Filtrer les coordonnées valides (latitude et longitude)
+    valid_geo_df = df_cities[df_cities['latitude'].between(-90, 90) & df_cities['longitude'].between(-180, 180)]
 
-    # Chargement des données
-    
-    st.write("ok1")
-    
-    m = leafmap.Map(center=[46.603354, 1.888334], zoom=6)
-    m.to_streamlit(width=700, height=500)
-    st.write("ok2")
+    if valid_geo_df.empty:
+        st.error("Aucune donnée avec des coordonnées valides n'a été trouvée.")
+        return
+
+    # Compter le nombre de lignes pour chaque Académie
+    acad_count = valid_geo_df.groupby('Académie').size().reset_index(name='Nombre de lignes')
+
+    # Fusionner les comptages avec les données géographiques
+    valid_geo_df = valid_geo_df[['Académie', 'latitude', 'longitude']].drop_duplicates()
+    valid_geo_df = pd.merge(valid_geo_df, acad_count, on='Académie')
+
+        # Créer une carte interactive avec Plotly
+    fig = px.scatter_mapbox(
+        valid_geo_df,
+        lat="latitude",
+        lon="longitude",
+        hover_name="Académie",
+        hover_data={"Nombre de lignes": True, "latitude": False, "longitude": False},  # Ne pas afficher latitude/longitude
+        size="Nombre de lignes",  # Taille des points proportionnelle au nombre de lignes
+        size_max=40,
+        color_discrete_sequence=["rgb(171,200,55)"],  # Couleur des points
+        zoom=5,
+        height=600,
+    )
+
+    # Utiliser un style clair pour la carte
+    fig.update_layout(mapbox_style="open-street-map")
+
+    # Ajuster les marges pour un meilleur affichage
+    fig.update_layout(margin={"r":0, "t":0, "l":0, "b":0})
+
+    # Afficher la carte dans Streamlit
+    st.plotly_chart(fig)
 
 # Exécution des fonctions avec gestion des états
 if __name__ == "__main__":
-    load_view()
-    national()
-    display_map_leafmap()
+    load_view()    
