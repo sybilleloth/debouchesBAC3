@@ -1,4 +1,3 @@
-#libraries dont erreur sur #streamlit.components.v1 : htmlpip
 altair
 folium 
 geopandas 
