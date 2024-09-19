@@ -38,6 +38,7 @@ def load_view():
     """)
     st.write(f"**Taille du jeu de données (lignes, colonnes):** {df.shape}")
     st.dataframe(df)
+    limites()
     display_factor(df)
     display_majors(df)
     display_spread_time(df)
@@ -439,6 +440,32 @@ def display_map_plotly(df_cities):
     # Afficher la carte dans Streamlit
     st.plotly_chart(fig)
 
+def limites():
+    st.header("Limites")
+    
+    # Création d'un bloc déroulable pour les limites
+    with st.expander("Voir les limites"):
+        st.markdown("""
+        **Limites**
+
+        1. L'étude, compte tenu du nettoyage et de l'objectif d'analyse micro, ne porte pas sur l'ensemble de la population Bac+3 :
+            - Les promotions dites "à cheval" entre deux années dans le dataset, sont rattachées à la promotion de l'année la plus récente (ex : 2019/2020 -> 2020, etc.).
+            - Afin de maximiser le nombre de mentions/diplômes par établissement pour lesquels des indicateurs d'insertion sont disponibles, un cumul avec la promotion précédente est effectué dans le cas où l'effectif est inférieur à 20. Malgré cela, des cas subsistent pour lesquels l'effectif cumulé reste inférieur à 20 et aucun taux d'emploi salarié en France n'est affiché.
+        
+        2. La qualification de l'insertion et de la stabilité repose sur plusieurs critères :
+            - Nature du contrat (CDI, CDD, etc.),
+            - Secteur d'activité,
+            - Profession et catégorie socio-professionnelle,
+            - Rémunération,
+            - Quotité de travail.
+
+        3. Le dispositif est assez récent et évolue rapidement par l'extension du nombre d'établissements ou de diplômes considérés.
+            - L'étudier dans la durée donnera plus de sens aux analyses.
+            - Le dispositif Insersup prévoit d'inclure également l'enrichissement progressif en indicateurs qualifiant les emplois occupés par les sortants du supérieur.
+
+        4. Pour les premières versions dont celle-ci, la population d'intérêt est réduite à celle des étudiants français de moins de 30 ans et ne reprenant pas d'études dans les 2 années suivant la diplomation.
+        """)
+
 # Exécution des fonctions avec gestion des états
 if __name__ == "__main__":
-    load_view()    
+    load_view()

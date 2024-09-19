@@ -46,35 +46,41 @@ def load_view():
     afficher_top3_regions_par_annee_groupée(df) 
     afficher_top3_regions_par_annee_groupée_taux_groupe(df)
 
-def metriques(df) :
-        total_sortants = df["Nombre de sortants"].sum()
-        total_poursuivants = df["Nombre de poursuivants"].sum()
-        total_regions = df["Région"].nunique()
-        total_etablissements = df["Etablissement"].nunique()
-        total_academies = df["Académie"].nunique()
-        total_disciplines = df["Discipline"].nunique()
-        total_periodes = df["Année(s) d'obtention du diplôme prise(s) en compte"].nunique()
-        
-        # Titre et sous-titre
-        st.header('Retenons de cette exploration...')
-        st.header("En synthèse, les données :")
 
-        # Dictionnaire contenant les données globales
-        donnees_globales = {
-            "Périodes de diplomation considérées": total_periodes,
-            "Total Effectif des étudiants sortants": total_sortants,
-            "Total Effectif des étudiants poursuivant leurs études": total_poursuivants,
-            "Nombre de disciplines diplômantes": total_disciplines,
-            "Nombre de régions": total_regions,
-            "Nombre d'académies": total_academies,
-            "Nombre d'établissements": total_etablissements,
-        }
-        #st.write(donnees_globales.items())
-        # Affichage des données
-        i = 1
-        for i, (legende, value) in enumerate(donnees_globales.items(), start=1):
-            st.write(f"{i}. {legende} : {int(value):,}".replace(',', ' '))
-            i+=1
+def metriques(df):
+    # Calcul des différentes métriques
+    total_sortants = df["Nombre de sortants"].sum()
+    total_poursuivants = df["Nombre de poursuivants"].sum()
+    total_regions = df["Région"].nunique()
+    total_etablissements = df["Etablissement"].nunique()
+    total_academies = df["Académie"].nunique()
+    total_disciplines = df["Discipline"].nunique()
+    total_periodes = df["Année(s) d'obtention du diplôme prise(s) en compte"].nunique()
+    taux_emploi_moyen = df["Taux d'emploi salarié en France"].mean().round(2)
+    taux_emploi_stable_moyen = df["% d'emplois stables parmi les salariés en France"].mean().round(2)
+    # Titre et sous-titre
+    st.header('Retenons de cette exploration...')
+    st.header("En synthèse, les données :")
+
+    # Dictionnaire contenant les données globales
+    donnees_globales = {
+        "Périodes de diplomation considérées": total_periodes,
+        "Total Effectif des étudiants sortants": total_sortants,
+        "Total Effectif des étudiants poursuivant leurs études": total_poursuivants,
+        "Nombre de disciplines diplômantes": total_disciplines,
+        "Nombre de régions": total_regions,
+        "Nombre d'académies": total_academies,
+        "Nombre d'établissements": total_etablissements,
+        "Taux moyen d'emploi salarié en France": taux_emploi_moyen,
+        "% moyen d'emplois stables parmi les salariés en France": taux_emploi_stable_moyen
+    }
+
+    # Affichage des données sous forme de liste
+    for i, (legende, value) in enumerate(donnees_globales.items(), start=1):
+        if isinstance(value, (int, float)):
+            st.write(f"{i}. {legende} : {value:,}".replace(',', ' '))
+        else:
+            st.write(f"{i}. {legende} : {value}")
 
 def appel_video():
     video_file = open("./src/assets/images/8284321-hd_1080_1920_30fps.mp4", 'rb')
@@ -104,7 +110,7 @@ def carte():
 
     # Calcul du nombre moyen de "Libellé du diplôme" par "Académie"
     moyenne_diplomes_par_academie = dfc.groupby('Académie')['Libellé du diplôme'].nunique().mean().round(2)
-    st.write(f"Nombre moyen de Libellé du diplôme par Académie : {round(moyenne_diplomes_par_academie)}")
+    st.write(f"Nombre moyen de Libellés de diplôme par Académie : {round(moyenne_diplomes_par_academie)}")
 
     # Calcul du nombre moyen de "Sortants" par "Libellé du diplôme" et par "Académie"
     moyenne_sortants_par_diplome_academie = dfc.groupby(['Académie', 'Libellé du diplôme'])['Nombre de sortants'].mean().mean().round(2)
@@ -145,13 +151,14 @@ def carte():
     st.pydeck_chart(
         pdk.Deck(
             map_style='mapbox://styles/mapbox/light-v10',
-            # Centrage de la carte sur la latitude moyenne de tous les points de l'académie
+            # Centrage de la carte sur la France
             initial_view_state=pdk.ViewState(
-                latitude=chart_data['latitude'].mean(),
-                longitude=chart_data['longitude'].mean(),
-                zoom=8,  # Augmenter le zoom
+                latitude=46.7683,  # Latitude centre de la France Bruyère Allichamp
+                longitude=2.4325,  # Longitude centre de la France Bruyère Allichamp
+                zoom=5,  # Niveau de zoom adapté pour voir tout le pays
                 pitch=50,
             ),
+     
             layers=[
                 pdk.Layer(
                     "ScatterplotLayer",
@@ -378,8 +385,6 @@ def timeline(df):
     # Afficher la figure dans Streamlit
     st.plotly_chart(fig)
 
-import plotly.express as px
-import streamlit as st
 
 def afficher_top3_regions_par_annee_groupée(df):
     # Ajouter la colonne Année_groupée
