@@ -17,17 +17,17 @@ def load_view():
     csv_file = "./data/esr_intersup_nettoye 2024_09.csv"
     try:
         df = pd.read_csv(csv_file)
-        print("Fichier chargé avec succès.")
+        print("Fichier chargé avec succès pour la page dataset.")
         df = df
     except FileNotFoundError:
         print(f"Le fichier {csv_file} est introuvable.")
     except Exception as e:
-        print(f"Une erreur est survenue lors du chargement du fichier: {e}")
+        print(f"Une erreur est survenue lors du chargement du fichier pour page dataset: {e}")
 
         # chargement dataset nettoyé avec coordonnées gps pour affichage de carte
     csv_file = "./data/esr_nettoye_avec_cities 2024_09.csv"
     df_cities = pd.read_csv(csv_file)
-    print("Fichier avec coordonnées gps chargé avec succès.")
+    print("Fichier avec coordonnées gps chargé avec succès pour page dataset.")
     df_cities = df_cities
     
   
@@ -39,8 +39,21 @@ def load_view():
     st.write(f"**Taille du jeu de données (lignes, colonnes):** {df.shape}")
     st.dataframe(df)
     limites()
+    display_map_plotly(df_cities) #carte interactive montant la répartion du nombre de lignes du dataset par académie
     display_factor(df)
+    
+    st.markdown("""
+    ### Répartition sortants et poursuivants par type de diplôme et par région 
+    """)
+    col1, col2 = st.columns(2)
+    with col1 : 
+        with st.expander( "voir le graphe par type de diplôme" ):
+            sortantspoursuivantstypediplome(df)
+    with col2 : 
+        with st.expander( "voir le graphe par région" ):
+            sortantspoursuivantsregion(df)
     display_majors(df)
+
     display_spread_time(df)
     st.header("Visualisations facilitant la prise de connaissance des données\n")
     col1, col2 = st.columns(2)
@@ -51,14 +64,102 @@ def load_view():
     
     viz_rank_university(df)
     
-    display_map_plotly(df_cities)
 
+
+
+def sortantspoursuivantstypediplome(df):
+    st.markdown("### Répartition des effectifs par type de région")
+    # Créer un tableau de répartition par 'Type de diplôme' avec les colonnes 'Nombre de sortants' et 'Nombre de poursuivants'
+    df_grouped = df.groupby("Type de diplôme")[['Nombre de sortants', 'Nombre de poursuivants']].sum()
+
+    # Créer une palette de couleurs personnalisée
+    colors = ['#abc837', '#77264b', '#006b80']  # pomme, aubergine, canard
+
+    # Créer un graphique à barres empilées (superposées)
+    fig, ax = plt.subplots(figsize=(10, 6))
+    df_grouped[['Nombre de sortants', 'Nombre de poursuivants']].plot(
+        kind='bar', stacked=True, figsize=(5, 3), ax=ax, color=colors[:2])
+
+    # Ajouter des titres et labels
+    ax.set_title('Répartition des effectifs par Type de diplôme')
+    ax.set_xlabel("Type de diplôme")
+    ax.set_ylabel('Effectifs')
+    ax.set_xticklabels(df_grouped.index, rotation=45, ha='right')
+
+    # Afficher le graphique
+    st.pyplot(fig)
+
+def sortantspoursuivantsregion(df):
+    st.markdown("### Répartition des effectifs par Région")
+
+    # Créer un tableau de répartition par 'Région' avec les colonnes 'Nombre de sortants' et 'Nombre de poursuivants'
+    df_grouped = df.groupby("Région")[['Nombre de sortants', 'Nombre de poursuivants']].sum()
+
+    # Ajouter une colonne pour le total (Nombre de sortants + Nombre de poursuivants)
+    df_grouped['Total'] = df_grouped['Nombre de sortants'] + df_grouped['Nombre de poursuivants']
+
+    # Trier les données par ordre décroissant en fonction du total
+    df_grouped = df_grouped.sort_values(by='Total', ascending=False)
+
+    # Créer une palette de couleurs personnalisée
+    colors = ['#abc837', '#77264b', '#006b80']  # pomme, aubergine, canard
+
+    # Créer un graphique à barres
+    fig, ax = plt.subplots(figsize=(10, 6))
+    
+    # Tracer les barres empilées pour chaque région
+    df_grouped[['Nombre de sortants', 'Nombre de poursuivants']].plot(
+        kind='bar', stacked=True, ax=ax, color=colors[:2])
+
+    # Ajouter des titres et labels
+    ax.set_title('Répartition des effectifs par Région (trié par ordre décroissant)')
+    ax.set_xlabel("Région")
+    ax.set_ylabel('Effectifs')
+    ax.set_xticklabels(df_grouped.index, rotation=45, ha='right')
+
+    # Afficher le graphique dans Streamlit
+    st.pyplot(fig)
 
 def display_factor(df):
     st.markdown("""
     ### Répartition des effectifs entrant sur le marché du travail en salariat après une formation Bac + 3
     """)
-        
+    with st.expander("détail") :
+        # Calculer le nombre de sortants globalement
+        total_sortants = df["Nombre de sortants"].sum()
+        total_sortants_tous_domaines = df[df["Domaine disciplinaire"] == "Tous domaines disciplinaires"]["Nombre de sortants"].sum()
+        total_sortants_autres = df[df["Domaine disciplinaire"] != "Tous domaines disciplinaires"]["Nombre de sortants"].sum()
+    
+        # Calculer le nombre de poursuivants globalement
+        total_poursuivants = df["Nombre de poursuivants"].sum()
+        total_poursuivants_tous_domaines = df[df["Domaine disciplinaire"] == "Tous domaines disciplinaires"]["Nombre de poursuivants"].sum()
+        total_poursuivants_autres =  df[df["Domaine disciplinaire"] != "Tous domaines disciplinaires"]["Nombre de poursuivants"].sum()
+
+        col1, col2, col3 = st.columns([1, 0.05, 1])  # Ajout d'une colonne centrale fine pour la barre
+
+        with col1:
+            # Afficher le nombre de sortants globalement
+            st.markdown(f"**Le nombre total d'étudiants sortant du cadre de l'enseignement est de :** **{total_sortants:,.0f}**".replace(',', ' '))
+            st.markdown(f" - dont sortants sans type de discipline spécifique : **{total_sortants_tous_domaines:,.0f}**".replace(',', ' '))
+            st.markdown(f" - dont sortants avec discipline spécifique : **{total_sortants_autres:,.0f}**".replace(',', ' '))
+            st.markdown(f"**Le nombre total d'étudiants poursuivant leur études est de :** **{total_poursuivants:,.0f}**".replace(',', ' '))
+            st.markdown(f" - dont poursuivants sans type de discipline spécifique : **{total_poursuivants_tous_domaines:,.0f}**".replace(',', ' '))
+            st.markdown(f" - dont poursuivants avec type de discipline spécifique  : **{total_poursuivants_autres:,.0f}**".replace(',', ' '))
+
+
+        # Ajouter la barre verticale dans une colonne centrale
+        with col2:
+            st.markdown(
+                """
+                 <div style='background-color: rgba(119, 38, 75, 1); width: 3px; height: 110px; margin: 0 auto;'></div>
+                """,
+                unsafe_allow_html=True
+            )
+
+        with col3:
+            st.markdown(f"**Le nombre total de spécialités étudiées est de :** **{df['Libellé du diplôme'].nunique():,}**")
+            st.markdown(f"**Réparties entre :** **{df['Domaine disciplinaire'].nunique():,}** **domaines disciplinaires**")
+ 
     # Filtrer le DataFrame pour le premier graphique : "Tous domaines disciplinaires"
     df_tous_domaines = df[(df["Domaine disciplinaire"] == "Tous domaines disciplinaires")]
 
@@ -99,32 +200,6 @@ def display_factor(df):
     # Affichage du graphique dans Streamlit
     st.pyplot(fig)
 
-    # Calculer le nombre de sortants globalement
-    total_sortants = df["Nombre de sortants"].sum()
-    total_sortants_national = df[df["Région"] == "National"]["Nombre de sortants"].sum()
-    total_sortants_non_national = df[df["Région"] != "National"]["Nombre de sortants"].sum()
-    
-    col1, col2, col3 = st.columns([1, 0.05, 1])  # Ajout d'une colonne centrale fine pour la barre
-
-    with col1:
-        # Afficher le nombre de sortants globalement
-        st.markdown(f"**Le nombre total d'étudiants sortant du cadre de l'enseignement est de :** **{total_sortants:,.0f}**".replace(',', ' '))
-        #st.markdown(f"**Ce nombre se répartit entre le nombre de sortants titulaires d'un diplôme national sans région spécifique :** **{total_sortants_national:,.0f}**".replace(',', ' '))
-        #st.markdown(f"**et le nombre de sortants distribués par région :** **{total_sortants_non_national:,.0f}**".replace(',', ' '))
-
-
-    # Ajouter la barre verticale dans une colonne centrale
-    with col2:
-        st.markdown(
-            """
-             <div style='background-color: rgba(119, 38, 75, 1); width: 3px; height: 110px; margin: 0 auto;'></div>
-            """,
-            unsafe_allow_html=True
-        )
-
-    with col3:
-        st.markdown(f"**Le nombre total de spécialités étudiées est de :** **{df['Libellé du diplôme'].nunique():,}**")
-        st.markdown(f"**Réparties entre :** **{df['Domaine disciplinaire'].nunique():,}** **domaines disciplinaires**")
 
 def display_majors(df) :
 
@@ -400,7 +475,6 @@ def viz_rank_university(df):
         st.plotly_chart(fig_academie)
 
 def display_map_plotly(df_cities):
-    #st.header("Carte interactive des académies en France")
     st.markdown("### Carte interactive des académies en France\n Cette carte du monde présente la répartition géographique des lignes du jeu de données. Il vous suffit de régler le zoom pour visualiser les DROM-COM.")
 
     # Filtrer les coordonnées valides (latitude et longitude)
@@ -417,7 +491,7 @@ def display_map_plotly(df_cities):
     valid_geo_df = valid_geo_df[['Académie', 'latitude', 'longitude']].drop_duplicates()
     valid_geo_df = pd.merge(valid_geo_df, acad_count, on='Académie')
 
-        # Créer une carte interactive avec Plotly
+    # Créer une carte interactive avec Plotly
     fig = px.scatter_mapbox(
         valid_geo_df,
         lat="latitude",
@@ -431,8 +505,12 @@ def display_map_plotly(df_cities):
         height=600,
     )
 
-    # Utiliser un style clair pour la carte
-    fig.update_layout(mapbox_style="open-street-map")
+    # Centrer la carte sur Bruyères-Allichamps, France
+    fig.update_layout(
+        mapbox_style="open-street-map",
+        mapbox_center={"lat": 46.7219, "lon": 2.4371},  # Coordonnées de Bruyères-Allichamps
+        mapbox_zoom=5  # Zoom sur la France
+    )
 
     # Ajuster les marges pour un meilleur affichage
     fig.update_layout(margin={"r":0, "t":0, "l":0, "b":0})
@@ -441,10 +519,10 @@ def display_map_plotly(df_cities):
     st.plotly_chart(fig)
 
 def limites():
-    st.header("Limites")
+    st.header("Limites du dataset dans sa version actuelle")
     
     # Création d'un bloc déroulable pour les limites
-    with st.expander("Voir les limites"):
+    with st.expander("détail..."):
         st.markdown("""
         **Limites**
 

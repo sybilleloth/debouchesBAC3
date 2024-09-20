@@ -1,13 +1,19 @@
 import streamlit as st
-# data analysisimport pandas as pd
 import pandas as pd
 import numpy as np
+import re
 
 # visualisation 
 import plotly.express as px
 import random as rnd
 import seaborn as sns
 import matplotlib.pyplot as plt
+import plotly.graph_objects as go
+import plotly.express as px
+#classes
+import sys #pour aller chercher les classes où il faut
+sys.path.append('./src/views')
+from population import population
 
 # Définition de la fonction de chargement des données et de visualisation principale
 def load_view():
@@ -15,14 +21,14 @@ def load_view():
     # Chargement des données
     csv_file = "./data/esr_intersup_nettoye 2024_09.csv"
     df = pd.read_csv(csv_file)
-
+    
     st.title(':mortar_board: Analyses et visualisations')
 
     st.header("Diversité des diplômes Bac + 3")
     viz_speciality_diploma_type(df)
     
     st.header("Popularité des domaines disciplinaires et des spécialités")
-    col1, col2 = st.columns(2)
+    col1, col2 = st.columns([1,3])
     with col1:
         viz_ranking_discipline(df)
     with col2:
@@ -65,14 +71,14 @@ def visualisation(df):
         
     elif visualisation_type == "Bar Plot":
         # Grouper par académie et calculer les statistiques descriptives
-        stats = df.groupby('Académie')["% d'emplois stables parmi les salariés en France"].describe()
+        #stats = df.groupby('Académie')["% d'emplois stables parmi les salariés en France"].describe()
         st.write("Statistiques descriptives du taux d'emploi par académie:")
-        st.write(stats)
+        #st.write(stats)
 
         # Calculer la moyenne et l'écart-type par académie
         mean_std = df.groupby('Académie')["% d'emplois stables parmi les salariés en France"].agg(['mean', 'std'])
         st.write("Moyenne et écart-type par académie:")
-        st.write(mean_std)
+        #st.write(mean_std)
 
         # Créer un graphique à barres classant les académies selon la moyenne du Taux d'emploi
         fig, ax = plt.subplots(figsize=(12, 8))
@@ -106,8 +112,7 @@ def viz_speciality_diploma_type(df):
    
     # Grouper par région et compter les libellés de diplôme
     libelle_count = df_filtered.groupby('Région')['Libellé du diplôme'].nunique()
-    st.write(f"Nombre de spécialités dispensées avec un diplôme Bac +3 par région :")
-    st.write(libelle_count)
+    st.write(f"Nombre de spécialités dispensées avec un diplôme Bac +3 par région :")    
     
     # Grouper par région et compter les valeurs uniques de "Domaine disciplinaire"
     domaine_count = df_filtered.groupby('Région')['Domaine disciplinaire'].nunique()
@@ -154,14 +159,18 @@ def viz_speciality_diploma_type(df):
         xref="paper",  # Position relative par rapport à l'ensemble du graphique
         yref="y"       # Position en termes de valeur y
     )
-    
+
     # Afficher le graphique dans Streamlit
     st.plotly_chart(fig)
 
 def viz_ranking_discipline(df):
-        
+    # appel des populations discipline 
+    pop = population(df)
+    df_domaine_discipline = pop.domaine_discipline()
+    #st.write(df_domaine_discipline)
+
     # Calculer le total des "nombre de poursuivants" + "nombre de sortants" pour chaque discipline
-    df['Total'] = df['Nombre de poursuivants'] + df['Nombre de sortants']
+    df['Total'] = df_domaine_discipline['Nombre de poursuivants'] + df_domaine_discipline['Nombre de sortants']
     total_by_discipline = df.groupby('Domaine disciplinaire')['Total'].sum().reset_index()
     
     # Sélectionner les 5 disciplines avec les valeurs les plus élevées
@@ -171,14 +180,19 @@ def viz_ranking_discipline(df):
     fig = px.pie(top_5_disciplines, 
                  values='Total', 
                  names='Domaine disciplinaire', 
-                 title='Top 5 des disciplines par nombre de poursuivants et sortants',
+                 title='Top 5 des disciplines par nombre de poursuivants et sortants <br> au niveau national',
                  color_discrete_sequence=px.colors.sequential.RdBu)
     
     # Afficher le graphique dans Streamlit
     st.plotly_chart(fig)
 
 def viz_ranking_speciality(df):
-        
+    st.write("***Top 5 des libellés de dipôme par nombre de poursuivants et sortants***")
+    # appel des populations discipline 
+    pop = population(df)
+    df_domaine_discipline = pop.domaine_discipline()
+    #st.write(df_domaine_discipline)
+    
     # Ajouter des sélections multiples pour le type de diplôme, le domaine disciplinaire et la région
     types_diplome = st.multiselect("Sélectionnez les types de diplôme", df['Type de diplôme'].unique(), default=df['Type de diplôme'].unique(), key='type_diplome_spec')
     domaines_disciplinaires = st.multiselect("Sélectionnez les domaines disciplinaires", df['Domaine disciplinaire'].unique(), default=df['Domaine disciplinaire'].unique(), key='domaine_disciplinaires_spec')
@@ -198,14 +212,15 @@ def viz_ranking_speciality(df):
     fig = px.pie(top_5_specialities, 
                  values='Total', 
                  names='Libellé du diplôme', 
-                 title='Top 5 des disciplines par nombre de poursuivants et sortants',
+                 #title='Top 5 des disciplines par nombre de poursuivants et sortants',
                  color_discrete_sequence=px.colors.sequential.RdBu)
     
     # Afficher le graphique dans Streamlit
     st.plotly_chart(fig)
 
+
 def viz_map_ranking(df):
-        # Remplacer les NaN dans "Nombre de poursuivants" et "Nombre de sortants" par 0
+    # Remplacer les NaN dans "Nombre de poursuivants" et "Nombre de sortants" par 0
     df['Nombre de poursuivants'].fillna(0, inplace=True)
     df['Nombre de sortants'].fillna(0, inplace=True)
 
@@ -225,26 +240,34 @@ def viz_map_ranking(df):
     map_data = pd.merge(taux_emploi_region, top_discipline_region, on='Région')
     map_data.columns = ['Région', 'Taux d\'emploi salarié en France', 'Libellé du diplôme', 'Total']
     
-    # Définir une palette de couleurs vertes proches de RVBA = abc837ff
-    colorscale = ['#d9e5a1', '#c3db73', '#abc837', '#91b32c', '#779d23']
-    
-    # Créer une carte choroplèthe avec Plotly
-    fig = px.choropleth(map_data, 
-                        locations='Région', 
-                        locationmode='geojson-id',
-                        geojson='https://raw.githubusercontent.com/gregoiredavid/france-geojson/master/regions-version-simplifiee.geojson',
-                        featureidkey="properties.nom",
-                        color='Taux d\'emploi salarié en France',
-                        color_continuous_scale=colorscale,
-                        hover_name='Région',
-                        hover_data={
-                            'Taux d\'emploi salarié en France': True,
-                            'Libellé du diplôme': True,
-                            'Total': True,
-                        },
-                        title='Classement par région du Taux d\'emploi salarié et du libellé de la discipline le plus significatif')
+    # Trier les données par taux d'emploi pour obtenir les 5 premières régions
+    map_data_sorted = map_data.sort_values(by="Taux d'emploi salarié en France", ascending=False)
+    top_5_regions = map_data_sorted.head(5)['Région'].tolist()
+
+    # Ajouter une colonne pour les couleurs (1 pour vert, 0 pour gris)
+    map_data['color'] = map_data['Région'].apply(lambda x: 1 if x in top_5_regions else 0)
+
+    # Créer une carte choroplèthe avec Plotly Graph Objects pour un meilleur contrôle des couleurs
+    fig = go.Figure(go.Choropleth(
+        geojson='https://raw.githubusercontent.com/gregoiredavid/france-geojson/master/regions-version-simplifiee.geojson',
+        featureidkey="properties.nom",
+        locations=map_data['Région'],
+        z=map_data['color'],
+        colorscale=[[0, '#e3e2db'], [1, '#006b80']],  # Gris pour les autres, vert pour les top 5
+        showscale=False,  # Ne pas afficher la légende des couleurs
+        hovertext=map_data['Région'],
+        hoverinfo='text',
+        customdata=map_data[['Taux d\'emploi salarié en France', 'Libellé du diplôme', 'Total']].values,
+        hovertemplate='<b>%{hovertext}</b><br>' +
+                      'Taux d\'emploi: %{customdata[0]}%<br>' +
+                      'Discipline: %{customdata[1]}<br>' +
+                      'Total: %{customdata[2]}<extra></extra>'
+    ))
 
     fig.update_geos(fitbounds="locations", visible=False)
+
+    # Ajouter un titre à la carte
+    fig.update_layout(title_text='Classement par région du Taux d\'emploi salarié et du libellé de la discipline le plus significatif')
 
     # Afficher la carte dans Streamlit
     st.plotly_chart(fig)
@@ -269,40 +292,52 @@ def viz_ranking_region(df):
     # Afficher le graphique dans Streamlit
     st.plotly_chart(fig)
 
-import streamlit as st
-import plotly.express as px
 
 def viz_rank_university(df): 
-    st.markdown("### Classement des Etablissements en fonction du nombre de Sortants et Poursuivants")
+    st.markdown("### Classement des Etablissements d'enseignement en fonction du nombre moyen de Sortants et Poursuivants par année")
+    
+    # Créer une instance de la classe population
+    pop = population(df)
 
-    # Calculer le total des "Nombre de sortants" + "Nombre de poursuivants" par établissement
-    df_grouped = df.groupby('Etablissement').agg({
+    # Appeler la méthode etablissement
+    df_etablissement = pop.etablissement()  # Notez les parenthèses car c'est une méthode
+    #st.write(df_etablissement) pour check
+    # Utiliser la colonne 'Annee_groupée' pour l'analyse
+    #df_etablissement['Année'] = df_etablissement["Annee_groupée"]
+
+    # Calculer le total des "Nombre de sortants" + "Nombre de poursuivants" par établissement et par année
+    df_grouped = df_etablissement.groupby(["Etablissement","Annee_groupée"]).agg({
         'Nombre de poursuivants': 'sum',
         'Nombre de sortants': 'sum'
     }).reset_index()
 
-    # Ajouter une colonne pour le total
+    # Ajouter une colonne pour le total annuel (sortants + poursuivants)
     df_grouped['Total Sortants + Poursuivants'] = df_grouped['Nombre de poursuivants'] + df_grouped['Nombre de sortants']
 
-    # Remplacer les NaN par 0 ou une petite valeur positive pour éviter les erreurs
-    df_grouped['Total Sortants + Poursuivants'].fillna(0, inplace=True)
+    # Calculer l'effectif moyen annuel pour chaque établissement
+    df_mean = df_grouped.groupby('Etablissement').agg({
+    'Total Sortants + Poursuivants': 'mean'
+    }).round(0).reset_index()
 
-    # Filtrer les établissements où le total est 0 pour éviter d'afficher des points de taille 0
-    df_grouped = df_grouped[df_grouped['Total Sortants + Poursuivants'] > 0]
 
-    # Trier par ordre décroissant du total
-    df_grouped = df_grouped.sort_values(by='Total Sortants + Poursuivants', ascending=False)
+    # Supprimer "Université de " ou "Université " des noms des établissements
+    df_mean['Etablissement'] = df_mean['Etablissement'].str.replace(r'Université de |Université ', '', regex=True)
 
-    # Créer une visualisation avec Plotly en utilisant une échelle de couleurs autour de RVB (0, 107, 128)
-    fig = px.scatter(df_grouped, 
-                     x='Total Sortants + Poursuivants', 
-                     y='Etablissement', 
+    # Trier par ordre décroissant du total moyen annuel
+    df_mean = df_mean.sort_values(by='Total Sortants + Poursuivants', ascending=False).round(0)
+    
+    # Afficher les résultats dans Streamlit
+    #st.write(df_mean)
+
+    # Créer une visualisation avec Plotly en utilisant une échelle de couleurs
+    fig = px.scatter(df_mean, 
+                     y='Total Sortants + Poursuivants', 
+                     x='Etablissement', 
                      size='Total Sortants + Poursuivants', 
                      color='Total Sortants + Poursuivants',
                      hover_name='Etablissement',
-                     title="Classement des Etablissements en fonction du nombre de Sortants et Poursuivants",
                      labels={
-                         'Total Sortants + Poursuivants': "Total Sortants + Poursuivants",
+                         'Total Sortants + Poursuivants': "Effectif moyen annuel",
                          'Etablissement': "Etablissement"
                      },
                      color_continuous_scale=[
@@ -313,10 +348,10 @@ def viz_rank_university(df):
 
     # Mettre à jour la disposition pour améliorer l'affichage
     fig.update_traces(marker=dict(line=dict(width=1, color='DarkSlateGrey')), selector=dict(mode='markers'))
-    fig.update_layout(height=600, width=800, margin=dict(l=0, r=0, t=30, b=0))
 
     # Afficher la figure dans Streamlit
     st.plotly_chart(fig)
+
 
 
 def viz_employ_rate_diploma_grouped(df):
@@ -379,10 +414,6 @@ def viz_employ_rate_diploma_grouped(df):
         else:
             st.write("Aucun diplôme dans cette tranche.")
 
-import pandas as pd
-import plotly.express as px
-import streamlit as st
-
 def viz_rank_university_avge(df):
     st.markdown("### Classement des établissements en fonction du nombre moyen de sortants par formation")
 
@@ -405,10 +436,10 @@ def viz_rank_university_avge(df):
     # Ajouter une colonne pour le total des sortants et poursuivants
     df_grouped['Total Sortants + Poursuivants'] = df_grouped['Nombre de poursuivants'] + df_grouped['Nombre de sortants']
 
-    # Remplacer les NaN par 0 ou une petite valeur positive pour éviter les erreurs
+    # Gérer les NaN : Remplacer les valeurs NaN par 0 pour "Nombre moyen de sortants par formation"
     df_grouped['Nombre moyen de sortants par formation'].fillna(0, inplace=True)
 
-    # Filtrer les établissements où le total est 0 pour éviter d'afficher des points de taille 0
+    # Filtrer les établissements où le total est supérieur à 0
     df_grouped = df_grouped[df_grouped['Total Sortants + Poursuivants'] > 0]
     
     # Trier par ordre décroissant du nombre moyen de sortants par formation
@@ -417,7 +448,7 @@ def viz_rank_university_avge(df):
     # Supprimer "Université de " ou "Université " des noms des établissements
     df_grouped['Etablissement'] = df_grouped['Etablissement'].str.replace(r'Université de |Université ', '', regex=True)
 
-    # Créer une visualisation avec Plotly en transposant les axes et utilisant les tonalités RVB (171, 200, 55)
+    # Créer une visualisation avec Plotly en transposant les axes et utilisant les tonalités RVB
     fig = px.scatter(df_grouped, 
                      x='Etablissement',  # Utilisation de la colonne correcte pour les établissements
                      y='Total Sortants + Poursuivants',  # Total Sortants + Poursuivants sur l'axe des y
@@ -431,9 +462,9 @@ def viz_rank_university_avge(df):
                          'Nombre moyen de sortants par formation': "Nombre moyen de sortants par formation"
                      },
                      color_continuous_scale=[
-                         "rgb(86, 100, 32)",  # Tonalité plus foncée de RVB (171, 200, 55)
-                         "rgb(171, 200, 55)",  # RVB (171, 200, 55)
-                         "rgb(231, 243, 190)"  # Tonalité plus claire de RVB (171, 200, 55)
+                         "rgb(86, 100, 32)",  # Tonalité plus foncée de RVB
+                         "rgb(171, 200, 55)",  # RVB
+                         "rgb(231, 243, 190)"  # Tonalité plus claire de RVB
                      ])
 
     # Mettre à jour la disposition pour améliorer l'affichage
@@ -453,6 +484,10 @@ def viz_rank_university_avge(df):
             x=0.5  # Position horizontale
         )
     )
-
     # Afficher la figure dans Streamlit
     st.plotly_chart(fig)
+
+# Exécution de la fonction principale
+if __name__ == "__main__":
+    load_view()
+ 

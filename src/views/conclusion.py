@@ -6,7 +6,6 @@ import plotly.express as px
 import matplotlib.pyplot as plt
 
 def load_view():
-    
     # Chargement des données
     csv_file = "./data/esr_intersup_nettoye 2024_09.csv"
     df = pd.read_csv(csv_file)
@@ -43,9 +42,8 @@ def load_view():
         maxi_region(df)  
     
     timeline(df)
-    afficher_top3_regions_par_annee_groupée(df) 
+    #afficher_top3_regions_par_annee_groupée(df) 
     afficher_top3_regions_par_annee_groupée_taux_groupe(df)
-
 
 def metriques(df):
     # Calcul des différentes métriques
@@ -55,9 +53,18 @@ def metriques(df):
     total_etablissements = df["Etablissement"].nunique()
     total_academies = df["Académie"].nunique()
     total_disciplines = df["Discipline"].nunique()
+    total_libelles = df["Libellé du diplôme"].nunique()
     total_periodes = df["Année(s) d'obtention du diplôme prise(s) en compte"].nunique()
-    taux_emploi_moyen = df["Taux d'emploi salarié en France"].mean().round(2)
-    taux_emploi_stable_moyen = df["% d'emplois stables parmi les salariés en France"].mean().round(2)
+
+    # Pondérer les taux d'emploi par le nombre de sortants
+    taux_emploi_pondere = (
+        (df["Taux d'emploi salarié en France"] * df["Nombre de sortants"]).sum() / total_sortants
+    ).round(2)
+
+    taux_emploi_stable_pondere = (
+        (df["% d'emplois stables parmi les salariés en France"] * df["Nombre de sortants"]).sum() / total_sortants
+    ).round(2)
+
     # Titre et sous-titre
     st.header('Retenons de cette exploration...')
     st.header("En synthèse, les données :")
@@ -68,19 +75,17 @@ def metriques(df):
         "Total Effectif des étudiants sortants": total_sortants,
         "Total Effectif des étudiants poursuivant leurs études": total_poursuivants,
         "Nombre de disciplines diplômantes": total_disciplines,
+        "Nombre de libellés du diplôme": total_libelles,
         "Nombre de régions": total_regions,
         "Nombre d'académies": total_academies,
         "Nombre d'établissements": total_etablissements,
-        "Taux moyen d'emploi salarié en France": taux_emploi_moyen,
-        "% moyen d'emplois stables parmi les salariés en France": taux_emploi_stable_moyen
+        "Taux moyen d'emploi salarié en France pondéré en %": taux_emploi_pondere,
+        "% moyen d'emplois stables parmi les salariés en France pondéré en %": taux_emploi_stable_pondere
     }
 
-    # Affichage des données sous forme de liste
-    for i, (legende, value) in enumerate(donnees_globales.items(), start=1):
-        if isinstance(value, (int, float)):
-            st.write(f"{i}. {legende} : {value:,}".replace(',', ' '))
-        else:
-            st.write(f"{i}. {legende} : {value}")
+    # Afficher les données globales dans Streamlit
+    for key, value in donnees_globales.items():
+        st.write(f"{key}: {value}")
 
 def appel_video():
     video_file = open("./src/assets/images/8284321-hd_1080_1920_30fps.mp4", 'rb')
@@ -194,7 +199,7 @@ def top3_formation(criteria, texte1, cible, texte2,df):
     else :   
         # Compter le nombre de formations avec une entrée sur le marché du travail de 6 mois
         formations_100 = df_filtered[df_filtered[cible] == 6].shape[0]
-        
+                
     print(formations_100)
 
 
@@ -202,7 +207,6 @@ def top3_formation(criteria, texte1, cible, texte2,df):
     st.markdown(f"**Nombre de {criteria} dont l'indice {texte2} est idéal : {formations_100}**")
 
     # Filtrer et trier pour chaque type de diplôme
-    #diplomes = ["Licence professionnelle", "Master LMD", "Master MEEF"]
     diplomes = df["Type de diplôme"].unique().tolist()
 
     # Concaténer les top 3 pour chaque diplôme
@@ -254,7 +258,6 @@ def top3_formation(criteria, texte1, cible, texte2,df):
     # Afficher le graphique
     st.plotly_chart(fig)
 
-   
 def maxi_poursuite(df):
     
     # Filtrer les données pour inclure uniquement les lignes avec un nombre de poursuivants et de sortants
@@ -293,6 +296,7 @@ def maxi_poursuite(df):
     # Afficher le graphique dans Streamlit
     st.pyplot(fig)
     st.caption("le % exprimé correspond au rapport Nombre de poursuivants / Nombre de sortants")
+
 def maxi_region(df):
        
     # Calculer le taux d'emploi moyen par région
@@ -385,7 +389,6 @@ def timeline(df):
     # Afficher la figure dans Streamlit
     st.plotly_chart(fig)
 
-
 def afficher_top3_regions_par_annee_groupée(df):
     # Ajouter la colonne Année_groupée
     df = ajouter_colonne_annee_groupée(df)
@@ -441,12 +444,12 @@ def afficher_top3_regions_par_annee_groupée_taux_groupe(df):
     # Ajouter la colonne Année_groupée
     df = ajouter_colonne_annee_groupée(df)
 
-    # Agréger les données par Année_groupée, région et calculer la moyenne du % d'emplois stables
-    df_grouped = df.groupby(
-        ["Année_groupée", "Région"]
-    ).agg({
-        "Taux d'emploi salarié en France": 'mean'
-    }).reset_index()
+    # Calculer le taux pondéré par région
+    df_grouped = df.groupby(["Année_groupée", "Région"]).apply(
+        lambda x: pd.Series({
+            "Taux d'emploi salarié en France": (x["Taux d'emploi salarié en France"] * x["Nombre de sortants"]).sum() / x["Nombre de sortants"].sum()
+        })
+    ).reset_index()
 
     # Trier les données par Année_groupée et par % d'emplois stables de façon décroissante
     df_sorted = df_grouped.sort_values(
@@ -458,8 +461,7 @@ def afficher_top3_regions_par_annee_groupée_taux_groupe(df):
     df_top3 = df_sorted.groupby("Année_groupée").head(3)
 
     # Afficher les résultats en tableau pour vérification
-    st.write("Top 3 des régions par Année_groupée avec le 'Taux d'emploi salarié en France' le plus élevé:")
-    #st.write(df_top3)
+    st.write("Top 3 des régions par année avec le 'Taux d'emploi salarié en France' le plus élevé (pondéré par le nombre de sortants) :")
 
     # Couleurs RVB spécifiques pour chaque région
     colors = {
@@ -476,7 +478,7 @@ def afficher_top3_regions_par_annee_groupée_taux_groupe(df):
         y="Taux d'emploi salarié en France",
         color="Région",  # Chaque région sera représentée par une couleur différente
         barmode="group",  # Les barres seront regroupées par Année_groupée
-        title="Top 3 des régions avec le 'Taux d'emploi salarié en France' le plus élevé par Année_groupée",
+        title="Top 3 des régions avec le 'Taux d'emploi salarié en France' le plus élevé par Année",
         labels={
             "Taux d'emploi salarié en France": "Taux d'emploi salarié",
             "Année_groupée": "Année du diplôme"
@@ -486,7 +488,8 @@ def afficher_top3_regions_par_annee_groupée_taux_groupe(df):
     )
 
     # Afficher le graphique dans Streamlit
-    st.plotly_chart(fig)    
+    st.plotly_chart(fig)
+
 
 def ajouter_colonne_annee_groupée(df):
     # Créer une nouvelle colonne "Année_groupée" en fonction de la dernière année
