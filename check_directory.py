@@ -1,4 +1,5 @@
 #vérifier l'état du fichier utilisateur : nombre de connexions par utilisateur et état des connexions
+# pour exécuter : python check_directory.py
 
 import sqlite3
 import pandas as pd
@@ -71,4 +72,3 @@ conn.close()
 print(final_df)
 
 
-#execute : python check_directory.py
