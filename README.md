@@ -22,8 +22,7 @@ In a few words : does the French educational system lead to work all over France
 
 this streamlit app has been developed and set up in Sept. 2024 thanks to open source tools introduced in page (MERCI)
 
-- Naviguez jusqu'à ce dossier : `cd projet-fil-rouge-{sybilleloth}`
-- Vérifiez que vous voyez bien les fichiers de ce dépôt lorsque vous exécutez `ls`.
+
 
 ### launch with MacOS / Linux
 
@@ -40,9 +39,10 @@ Do execute the following commands in the forthcoming proper ordre :
 `pip install -r requirements.txt`
 
 `python3 setup.py`
-
-- In order to call the Streamlit app : 
-`streamlit run sortiebac3enfrance.py`
+'from your directory : `cd {your_directory}`
+- check the existing files with ' `ls` command 
+- In order to call the Streamlit app :  **`streamlit run sortiebac3enfrance.py`**
+- In order to call the logs on the app : **'python check_directory.py'**
 
 ### set up the kernel (virtual environment)
 
