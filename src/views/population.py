@@ -188,7 +188,14 @@ class population:
 
         return df_etablissement
 
-    
+    def group_annee(self):
+        # ne conserver que les 4 derniers caractères des années pour regrouper par année
+        self.df['Annee_groupée'] = self.df['Année(s) d\'obtention du diplôme prise(s) en compte'].astype(str).str[-4:]
+
+        # Filtrer les années qui ne sont ni 2020, ni 2021, ni 2022
+        #self.df['Annee_groupée'] = self.df['Annee_groupée'].where(self.df['Annee_groupée'].isin(['2020', '2021', '2022']), 'Autre')
+
+        return self.df
 
     """ appel des fonctions depuis les pages de vue :
      Créer une instance de la classe population
@@ -196,4 +203,4 @@ class population:
     # Appeler la méthode libelle et afficher les résultats
     df_region = pop.region()
     st.write(df_region)
-    """
+    """ 

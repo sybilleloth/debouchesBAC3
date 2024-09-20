@@ -42,7 +42,7 @@ def load_view():
         maxi_region(df)  
     
     timeline(df)
-    #afficher_top3_regions_par_annee_groupée(df) 
+    afficher_top3_regions_par_annee_groupée(df) 
     afficher_top3_regions_par_annee_groupée_taux_groupe(df)
 
 def metriques(df):
@@ -489,7 +489,6 @@ def afficher_top3_regions_par_annee_groupée_taux_groupe(df):
 
     # Afficher le graphique dans Streamlit
     st.plotly_chart(fig)
-
 
 def ajouter_colonne_annee_groupée(df):
     # Créer une nouvelle colonne "Année_groupée" en fonction de la dernière année

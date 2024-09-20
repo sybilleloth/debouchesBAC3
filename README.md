@@ -11,7 +11,7 @@
 
 ## Démarrage
 
-- Naviguez jusqu'à ce dossier : `cd projet-fil-rouge-{username_github}`
+- Naviguez jusqu'à ce dossier : `cd projet-fil-rouge-{sybilleloth}`
 - Vérifiez que vous voyez bien les fichiers de ce dépôt lorsque vous exécutez `ls`.
 
 ### MacOS / Linux
@@ -30,4 +30,4 @@ Exécutez les commandes suivantes, dans l'ordre :
 
 `python3 setup.py`
 - Pour lancer votre application Streamlit :
-`streamlit run main.py`
+`streamlit run sortiebac3enfrance.py`
