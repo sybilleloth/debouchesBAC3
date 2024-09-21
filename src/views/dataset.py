@@ -10,6 +10,9 @@ import seaborn as sns
 #import leafmap.foliumap as leafmap
 #import pydeck as pdk
 
+import sys #pour aller chercher les classes où il faut
+sys.path.append('./src/views')
+from population import population
 
 
 def load_view():
@@ -17,7 +20,7 @@ def load_view():
     csv_file = "./data/esr_intersup_nettoye 2024_09.csv"
     try:
         df = pd.read_csv(csv_file)
-        print("Fichier chargé avec succès pour la page dataset.")
+        print("Fichier {csv_file} chargé avec succès pour la page dataset.")
         df = df
     except FileNotFoundError:
         print(f"Le fichier {csv_file} est introuvable.")
@@ -33,13 +36,31 @@ def load_view():
   
 # affichage et appel pour la vue de la page dataset et appel des fonctions
     st.title(':label: Présentation du jeu de données nettoyé')
+    
     st.markdown("""
-    ### Tableau et données 
+    ### 1. Le tableau des données 
     """)
     st.write(f"**Taille du jeu de données (lignes, colonnes):** {df.shape}")
-    st.dataframe(df)
+    with st.expander("visualiser le dataset (jeu de données)") :
+        st.dataframe(df)
+    
+    st.markdown("""
+    ### 2. Limites du dataset dans sa version actuelle 
+    """)
     limites()
+
+    st.markdown("""
+                ### 3. Carte géographique de répartition des lignes du jeu de données par académie en France\n Cette carte du monde présente la répartition géographique des lignes du jeu de données. Il vous suffit de régler le zoom pour visualiser les DROM-COM.
+                """)
     display_map_plotly(df_cities) #carte interactive montant la répartion du nombre de lignes du dataset par académie
+    
+    st.header("Visualisations facilitant la prise de connaissance des données\n")
+    with st.expander("afficher les vues"):
+        col1, col2 = st.columns(2)
+        with col1:
+            display_corr_var(df)
+        with col2:
+            data_heat(df)
     display_factor(df)
     
     st.markdown("""
@@ -55,22 +76,22 @@ def load_view():
     display_majors(df)
 
     display_spread_time(df)
-    st.header("Visualisations facilitant la prise de connaissance des données\n")
-    col1, col2 = st.columns(2)
-    with col1:
-        display_corr_var(df)
-    with col2:
-        data_heat(df)
-    
+     
     viz_rank_university(df)
     
 
 
 
 def sortantspoursuivantstypediplome(df):
-    st.markdown("### Répartition des effectifs par type de région")
+    st.markdown("### Répartition des effectifs par type de diplôme")
+    # Créer une instance de la classe population
+    pop = population(df)
+    #st.write(dir(pop)) pour checker les attributs et méthodes
+    # Appeler la méthode etablissement
+    df_type_diplome = pop.type_diplome()  # Notez les parenthèses car c'est une méthode
+    #st.write(df_type_diplome) #pour check
     # Créer un tableau de répartition par 'Type de diplôme' avec les colonnes 'Nombre de sortants' et 'Nombre de poursuivants'
-    df_grouped = df.groupby("Type de diplôme")[['Nombre de sortants', 'Nombre de poursuivants']].sum()
+    df_grouped = df_type_diplome.groupby("Type de diplôme")[['Nombre de sortants', 'Nombre de poursuivants']].sum()
 
     # Créer une palette de couleurs personnalisée
     colors = ['#abc837', '#77264b', '#006b80']  # pomme, aubergine, canard
@@ -92,8 +113,14 @@ def sortantspoursuivantstypediplome(df):
 def sortantspoursuivantsregion(df):
     st.markdown("### Répartition des effectifs par Région")
 
+    # Créer une instance de la classe population
+    pop = population(df)
+    #st.write(dir(pop)) pour checker les attributs et méthodes
+    # Appeler la méthode etablissement
+    df_region = pop.region()  # parenthèses car c'est une méthode
+    #st.write(df_region) pour check cohérence avec graphique
     # Créer un tableau de répartition par 'Région' avec les colonnes 'Nombre de sortants' et 'Nombre de poursuivants'
-    df_grouped = df.groupby("Région")[['Nombre de sortants', 'Nombre de poursuivants']].sum()
+    df_grouped = df_region.groupby("Région")[['Nombre de sortants', 'Nombre de poursuivants']].sum()
 
     # Ajouter une colonne pour le total (Nombre de sortants + Nombre de poursuivants)
     df_grouped['Total'] = df_grouped['Nombre de sortants'] + df_grouped['Nombre de poursuivants']
@@ -124,16 +151,22 @@ def display_factor(df):
     st.markdown("""
     ### Répartition des effectifs entrant sur le marché du travail en salariat après une formation Bac + 3
     """)
+    # Créer une instance de la classe population
+    pop = population(df)
+    #st.write(dir(pop)) pour checker les attributs et méthodes
+    # Appeler la méthode etablissement
+    df_region_discipline = pop.region_discipline()  # Notez les parenthèses car c'est une méthode
+    #st.write(df_region_discipline) #pour check
     with st.expander("détail") :
         # Calculer le nombre de sortants globalement
-        total_sortants = df["Nombre de sortants"].sum()
-        total_sortants_tous_domaines = df[df["Domaine disciplinaire"] == "Tous domaines disciplinaires"]["Nombre de sortants"].sum()
-        total_sortants_autres = df[df["Domaine disciplinaire"] != "Tous domaines disciplinaires"]["Nombre de sortants"].sum()
+        total_sortants = df_region_discipline["Nombre de sortants"].sum()
+        total_sortants_tous_domaines = df_region_discipline[df_region_discipline["Domaine disciplinaire"] == "Tous domaines disciplinaires"]["Nombre de sortants"].sum()
+        total_sortants_autres = df_region_discipline[df_region_discipline["Domaine disciplinaire"] != "Tous domaines disciplinaires"]["Nombre de sortants"].sum()
     
         # Calculer le nombre de poursuivants globalement
-        total_poursuivants = df["Nombre de poursuivants"].sum()
-        total_poursuivants_tous_domaines = df[df["Domaine disciplinaire"] == "Tous domaines disciplinaires"]["Nombre de poursuivants"].sum()
-        total_poursuivants_autres =  df[df["Domaine disciplinaire"] != "Tous domaines disciplinaires"]["Nombre de poursuivants"].sum()
+        total_poursuivants =  df_region_discipline["Nombre de poursuivants"].sum()
+        total_poursuivants_tous_domaines =  df_region_discipline[ df_region_discipline["Domaine disciplinaire"] == "Tous domaines disciplinaires"]["Nombre de poursuivants"].sum()
+        total_poursuivants_autres =   df_region_discipline[ df_region_discipline["Domaine disciplinaire"] != "Tous domaines disciplinaires"]["Nombre de poursuivants"].sum()
 
         col1, col2, col3 = st.columns([1, 0.05, 1])  # Ajout d'une colonne centrale fine pour la barre
 
@@ -161,10 +194,10 @@ def display_factor(df):
             st.markdown(f"**Réparties entre :** **{df['Domaine disciplinaire'].nunique():,}** **domaines disciplinaires**")
  
     # Filtrer le DataFrame pour le premier graphique : "Tous domaines disciplinaires"
-    df_tous_domaines = df[(df["Domaine disciplinaire"] == "Tous domaines disciplinaires")]
+    df_tous_domaines =  df_region_discipline[( df_region_discipline["Domaine disciplinaire"] == "Tous domaines disciplinaires")]
 
     # Filtrer le DataFrame pour le second graphique : Toutes les autres valeurs
-    df_autres_domaines = df[(df["Domaine disciplinaire"] != "Tous domaines disciplinaires")]
+    df_autres_domaines = df_region_discipline[( df_region_discipline["Domaine disciplinaire"] != "Tous domaines disciplinaires")]
     
     # Calculer les limites pour l'axe x du second graphique
     min_sortants = df_autres_domaines["Nombre de sortants"].min() - 10
@@ -177,12 +210,12 @@ def display_factor(df):
     #custom_palette = {"National": "#abc837ff"}
     
     # Premier graphique (avec couleur personnalisée)palette=custom_palette
-    sns.boxplot(x="Nombre de sortants", y="Domaine disciplinaire", hue="Région", data=df_tous_domaines, ax=axes[0] )
+    sns.barplot(x="Nombre de sortants", y="Domaine disciplinaire", hue="Région", data=df_tous_domaines, ax=axes[0] )
     axes[0].set_title("Graphique pour 'Tous domaines disciplinaires'")
     axes[0].legend_.remove()  # On enlève la légende du premier graphique
     
     # Second graphique (avec ajustement de l'axe x)
-    sns.boxplot(x="Nombre de sortants", y="Domaine disciplinaire", hue="Région", data=df_autres_domaines, ax=axes[1])
+    sns.barplot(x="Nombre de sortants", y="Domaine disciplinaire", hue="Région", data=df_autres_domaines, ax=axes[1])
     axes[1].set_title("Graphique pour les autres domaines disciplinaires")
     axes[1].legend_.remove()  # On enlève la légende du second graphique
     
@@ -200,7 +233,6 @@ def display_factor(df):
     # Affichage du graphique dans Streamlit
     st.pyplot(fig)
 
-
 def display_majors(df) :
 
     st.markdown("### Présentation de la répartition des libellés de diplôme par domaine disciplinaire.")
@@ -214,19 +246,25 @@ def display_majors(df) :
 
     # Calculer le nombre de valeurs uniques pour le domaine disciplinaire sélectionné
     unique_secteurs = df_filtered['Secteur disciplinaire'].nunique()
-    #unique_libelles_secteur = df_filtered['Libellé du secteur'].nunique()
     unique_libelles_diplome = df_filtered['Libellé du diplôme'].nunique()
 
     # Afficher les informations au-dessus du DataFrame
     st.markdown(f"**Nombre de secteurs disciplinaires uniques pour '{selected_domaine}' :** {unique_secteurs}")
     #st.markdown(f"**Nombre de libellés de secteur uniques pour '{selected_domaine}' :** {unique_libelles_secteur}")
     st.markdown(f"**Nombre de libellés de diplôme uniques pour '{selected_domaine}' :** {unique_libelles_diplome}")
-
-    # Ne pas afficher les 11 dernières colonnes
-    df_filtered = df_filtered.iloc[:, :-11]
-
-    # Afficher le DataFrame filtré
-    st.dataframe(df_filtered)
+    col1,col2 = st.columns([1,1])
+    with col1 :
+        df_filtered = df_filtered.iloc[:, :-11]
+        # Afficher le DataFrame filtré
+        st.dataframe(df_filtered, use_container_width=False, height=300)
+    with col2 :
+        # Ne pas afficher les 11 dernières colonnes
+        df_filtered_bis = df[df['Domaine disciplinaire'] == selected_domaine]
+        df_filtered_bis = df_filtered_bis.iloc[:,4 :8]
+        # Afficher uniquement les valeurs uniques de 'Libellé du diplôme'
+        df_filtered_bis_unique = df_filtered_bis.drop_duplicates(subset=['Libellé du diplôme'])
+        # Afficher le DataFrame filtré
+        st.dataframe(df_filtered_bis_unique, use_container_width=False, height=300)
 
 def display_corr_var(df):
     st.markdown("### Corrélation entre les variables\n ")
@@ -276,15 +314,20 @@ def data_heat(df):
 
 def display_spread_time(df):
     st.markdown("### Espace temporel des données : millésimes des diplômes et analyses des taux d'emploi à la sortie des formations \n ")
- 
+    # Créer une instance de la classe population
+    pop = population(df)
+    #st.write(dir(pop)) #pour checker les attributs et méthodes
+    # Appeler la méthode etablissement
+    df_millesime = pop.millesime()  #  parenthèses car c'est une méthode
+    #st.write(df_millesime) #pour check
     # Création de la figure avec deux sous-graphiques côte à côte
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 6))  # 1 ligne, 2 colonnes
 
-    # Groupement des données
-    df_grouped_s = df.groupby("Année(s) d'obtention du diplôme prise(s) en compte")["Nombre de sortants"].sum()
-    df_grouped_p = df.groupby("Année(s) d'obtention du diplôme prise(s) en compte")["Nombre de poursuivants"].sum()
+    # Groupement des données par Année(s) d'obtention du diplôme prise(s) en compte
+    df_grouped_s = df_millesime.groupby("Année(s) d'obtention du diplôme prise(s) en compte")["Nombre de sortants"].sum()
+    df_grouped_p = df_millesime.groupby("Année(s) d'obtention du diplôme prise(s) en compte")["Nombre de poursuivants"].sum()
 
-# Plot 1: Nombre de sortants et Nombre de poursuivants par Année(s) d'obtention du diplôme
+# Plot 1: Nombre de sortants et Nombre de poursuivants par Année(s) d'obtention du diplôme (avant regroupement des millésimes)
     ax1.plot(df_grouped_s.index, df_grouped_s, marker='o', label="Nombre de sortants", color="#abc837")
     ax1.plot(df_grouped_p.index, df_grouped_p, marker='o', label="Nombre de poursuivants", color="#77264b")
     # Ajouter les annotations des valeurs exactes pour chaque point
@@ -300,13 +343,13 @@ def display_spread_time(df):
                      textcoords="offset points", 
                      xytext=(0, 5), ha='center', fontsize=8)
 
-    ax1.set_xlabel("Année d'obtention du diplôme")
+    ax1.set_xlabel("Année(s) d'obtention du diplôme prise(s) en compte")
     ax1.set_ylabel("Nombre")
-    ax1.set_title("Nombre d'étudiants sortants vs poursuivant leurs études par année d'obtention du diplôme")
+    ax1.set_title("Nb sortants / poursuivants par année de diplome")
     ax1.legend(fontsize='small', loc='upper right')  # Réduction de la taille de la légende et positionnement
 
 
-# Plot 2: Nombre de sortants par Date d'insertion en emploi
+# Plot 2: Nombre de sortants sondés par période post dimplôme 
     df_grouped = df.groupby("Mois après la diplomation")["Nombre de sortants"].sum().reset_index()
     ax2.bar(df_grouped["Mois après la diplomation"], df_grouped["Nombre de sortants"], color="#abc837")
 
@@ -315,9 +358,16 @@ def display_spread_time(df):
     ax2.set_xlabel("Mois après la diplomation")
     ax2.set_ylabel("Nombre de sortants")
     ax2.set_title("Nombre de sortants par date d'insertion en emploi")
+    # Ajouter les annotations des valeurs exactes au-dessus de chaque barre
 
+    for i in range(len(df_grouped)):
+        ax2.annotate(f'{df_grouped["Nombre de sortants"].iloc[i]}', 
+                     (df_grouped["Mois après la diplomation"].iloc[i], df_grouped["Nombre de sortants"].iloc[i]), 
+                     textcoords="offset points", 
+                     xytext=(0, 5), ha='center', fontsize=8)
     # Affichage des graphiques dans Streamlit
-    st.pyplot(fig)
+    with st.expander("visualiser les répatyion dans le temps et par date d'insertion en emploi des sortants") :
+        st.pyplot(fig)
 
 def viz_rank_university(df):
     
@@ -389,19 +439,33 @@ def viz_rank_university(df):
 
 
     col1, col2 = st.columns(2)  
-    with col1 :
-        # Calculer le nombre moyen de sortants par formation
-        df_grouped['Nombre moyen de sortants par formation'] = df_grouped['Nombre de sortants'] / df_grouped['Nombre de formations uniques']
+    with col1:
+        # Créer une instance de la classe population
+        pop = population(df)
+    
+        # Appeler la méthode etablissement et afficher les résultats
+        df_etablissement = pop.etablissement()
+        #st.write(df_etablissement)  # Vérification du DataFrame
+
+        # Calculer le nombre moyen de sortants par formation et par établissement
+        df_grouped = df_etablissement.groupby('Etablissement').agg({
+            'Nombre de sortants': 'mean',  # Moyenne du nombre de sortants par établissement,
+            'Nombre de poursuivants': 'mean',  # Moyenne du nombre de poursuivants par établissement
+        }).reset_index()
 
         # Vérification du calcul avec un scroller
-        st.markdown("### Nombre moyen de sortants par formation")
-        # Arrondir le 'Nombre moyen de sortants par formation' à l'entier le plus proche
-        df_grouped['Nombre moyen de sortants par formation'] = df_grouped['Nombre moyen de sortants par formation'].round()
-        # Trier le DataFrame par 'Nombre moyen de sortants par formation' en ordre croissant
-        df_sorted = df_grouped[['Etablissement', 'Nombre moyen de sortants par formation']].sort_values(by='Nombre moyen de sortants par formation', ascending=True)
+        st.markdown("### Nombre moyen de sortants annuel par établissement et par libellé de formation")
 
-        # Afficher le DataFrame trié
-        st.dataframe(df_sorted)
+        # Arrondir le 'Nombre de sortants' à l'entier le plus proche
+        df_grouped["Nombre de sortants"] = df_grouped["Nombre de sortants"].round()
+
+        # Trier le DataFrame par 'Nombre de sortants' en ordre croissant
+        df_sorted = df_grouped[['Etablissement', "Nombre de sortants"]].sort_values(by="Nombre de sortants", ascending=True)
+
+        with st.expander( "voir les données" ):
+            # Afficher le DataFrame trié
+            st.dataframe(df_sorted)
+
 
     
     with col2 :
@@ -409,74 +473,86 @@ def viz_rank_university(df):
         df_grouped['Total Sortants + Poursuivants'] = df_grouped['Nombre de poursuivants'] + df_grouped['Nombre de sortants']
 
         # Remplacer les NaN par 0 ou une petite valeur positive pour éviter les erreurs
-        df_grouped['Nombre moyen de sortants par formation'].fillna(0, inplace=True)
+        df_grouped['Nombre de sortants'].fillna(0, inplace=True)
 
         # Filtrer les établissements où le total est 0 pour éviter d'afficher des points de taille 0
         df_grouped = df_grouped[df_grouped['Total Sortants + Poursuivants'] > 0]
     
         # Trier par ordre décroissant du nombre moyen de sortants par formation
-        df_grouped = df_grouped.sort_values(by='Nombre moyen de sortants par formation', ascending=False)
+        df_grouped = df_grouped.sort_values(by='Nombre de sortants', ascending=False)
     
         st.markdown("### Classement des établissements en fonction du Nombre moyen de sortants par formation")
         # Créer une visualisation avec Plotly pour le classement des établissements
         fig = px.scatter(df_grouped, 
                          x='Etablissement', 
                          y='Total Sortants + Poursuivants', 
-                         size='Nombre moyen de sortants par formation', 
-                         color='Nombre moyen de sortants par formation',
+                         size='Nombre de sortants', 
+                         color='Nombre de sortants',
                          hover_name='Etablissement',
-                         title="Classement des établissements en fonction du nombre moyen de sortants par formation",
+                         title="Classement des établissements en fonction de la taille moyenne des promotions par formation",
                          labels={
                              'Total Sortants + Poursuivants': "Total Sortants + Poursuivants",
                              'Etablissement': "Etablissement",
-                             'Nombre moyen de sortants par formation': "Nombre Moyen de Sortants par Formation"
+                             'Nombre de sortants': "Nombre Moyen de Sortants par Formation"
                         },color_continuous_scale=["#e1f5c4", "#abc837", "#629e00"])# Palette de verts)  # Couleur verte spécifiée
 
         # Mettre à jour la disposition pour améliorer l'affichage
         fig.update_traces(marker=dict(line=dict(width=1, color='DarkSlateGrey')), selector=dict(mode='markers'))
         fig.update_layout(height=600, width=800, margin=dict(l=0, r=0, t=30, b=0))
     
-        # Afficher la figure dans Streamlit
-        st.plotly_chart(fig)
+        with st.expander( "visualiser" ):
+            # Afficher la figure dans Streamlit
+            st.plotly_chart(fig)
 
     # Créer deux colonnes pour afficher les graphiques côte à côte
     col1, col2 = st.columns(2)
 
 # Première colonne: Nombre de Sortants par Région
     with col1:
-        st.markdown("### Nombre de Sortants par Région")
-        df_region = df.groupby('Région')['Nombre de sortants'].sum().reset_index()
+        st.markdown("### Nombre cumulé de Sortants par Région")
+        #Créer une instance de la classe population
+        pop = population(df)
+        # Appeler la méthode libelle et afficher les résultats
+        df_region = pop.region()
+        #st.write(df_region)
+        
+        df_region = df_region.groupby('Région')['Nombre de sortants'].sum().reset_index()
         df_region = df_region.sort_values(by='Nombre de sortants', ascending=False)  # Trier par ordre décroissant
         fig_region = px.bar(df_region, 
                             x='Région', 
                             y='Nombre de sortants', 
                             color='Nombre de sortants',
-                            title="Nombre de Sortants par Région",
+                            #title="Nombre de Sortants par Région",
                             labels={'Nombre de sortants': "Nombre de Sortants", 'Région': "Région"},color_continuous_scale=["#f0e1ea", "#ab5676", "#77264b"])
 
         fig_region.update_layout(height=600, margin=dict(l=0, r=0, t=30, b=0))
-        st.plotly_chart(fig_region)
+        with st.expander( "voir le graphe" ):
+            st.plotly_chart(fig_region)
 
 # Deuxième colonne: Nombre de Sortants par Académie
     with col2:
-        st.markdown("### Nombre de Sortants par Académie")
-        df_academie = df.groupby('Académie')['Nombre de sortants'].sum().reset_index()
+        st.markdown("### Nombre cumulé de Sortants par Académie")
+        #Créer une instance de la classe population
+        pop = population(df)
+        # Appeler la méthode libelle et afficher les résultats
+        df_academie = pop.academie()
+        #st.write(df_academie)
+        df_academie = df_academie.groupby('Académie')['Nombre de sortants'].sum().reset_index()
         df_academie = df_academie.sort_values(by='Nombre de sortants', ascending=False)  # Trier par ordre décroissant
         fig_academie = px.bar(df_academie, 
                               x='Académie', 
                               y='Nombre de sortants', 
                               color='Nombre de sortants',
-                              title="Nombre de Sortants par Académie",
+                              #title="Nombre de Sortants par Académie",
                               labels={'Nombre de sortants': "Nombre de Sortants", 'Académie': "Académie"},
                               color_continuous_scale=["#f0e1ea", "#ab5676", "#77264b"]  # Couleur pourpre/violet
                             )
 
         fig_academie.update_layout(height=600, margin=dict(l=0, r=0, t=30, b=0))
-        st.plotly_chart(fig_academie)
+        with st.expander( "voir le graphe" ):
+            st.plotly_chart(fig_academie)
 
-def display_map_plotly(df_cities):
-    st.markdown("### Carte interactive des académies en France\n Cette carte du monde présente la répartition géographique des lignes du jeu de données. Il vous suffit de régler le zoom pour visualiser les DROM-COM.")
-
+def display_map_plotly(df_cities): # Carte interactive des académies en France
     # Filtrer les coordonnées valides (latitude et longitude)
     valid_geo_df = df_cities[df_cities['latitude'].between(-90, 90) & df_cities['longitude'].between(-180, 180)]
 
@@ -518,9 +594,8 @@ def display_map_plotly(df_cities):
     # Afficher la carte dans Streamlit
     st.plotly_chart(fig)
 
-def limites():
-    st.header("Limites du dataset dans sa version actuelle")
-    
+def limites(): #texte sur limites et réserves dataset
+    #2. Limites du dataset dans sa version actuelle
     # Création d'un bloc déroulable pour les limites
     with st.expander("détail..."):
         st.markdown("""
@@ -542,6 +617,8 @@ def limites():
             - Le dispositif Insersup prévoit d'inclure également l'enrichissement progressif en indicateurs qualifiant les emplois occupés par les sortants du supérieur.
 
         4. Pour les premières versions dont celle-ci, la population d'intérêt est réduite à celle des étudiants français de moins de 30 ans et ne reprenant pas d'études dans les 2 années suivant la diplomation.
+        
+        5. Les étudiants qui suivraient un double Bac + 3 ne sont pas isolés ni identifiés. On supposera que rapporté au nombre total, leur quote-part n'est pas significative.
         """)
 
 # Exécution des fonctions avec gestion des états

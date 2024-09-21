@@ -5,6 +5,10 @@ import base64
 import plotly.express as px
 import matplotlib.pyplot as plt
 
+import sys #pour aller chercher les classes où il faut
+sys.path.append('./src/views')
+from population import population
+
 def load_view():
     # Chargement des données
     csv_file = "./data/esr_intersup_nettoye 2024_09.csv"

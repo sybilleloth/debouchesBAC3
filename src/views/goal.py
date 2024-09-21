@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-#import numpy as np
+import numpy as np
 
 
 def load_view():    
@@ -69,12 +69,15 @@ def legendes():
         st.markdown("""
             ***Sortants et Poursuivants***: La population d’intérêt étant celle des étudiants français de moins de 30 ans, diplômés de Licence ou Master d’une session annuelle N, et ne poursuivant pas d’études en N+1 ou N+2.
             A l'inverse, les sortants sont les étudiants qui quittent le fichier des étudiants inscrits dans un établissement sous tutelle du Ministère de l’enseignement supérieur ou Fichier des apprentis en CFA.
+            
             ***Nombre de mois après la diplomation***: correspond à une observation aux dates suivantes :
             - 6 mois décembre de l’année N (1ère semaine du mois)
             - 12 mois juin de l’année N+1 (2nde semaine du mois)
             - 18 mois décembre de l’année N+1 (1ère semaine du mois)
             - 24 mois juin de l’année N+2 (2nde semaine du mois)
             - 30 mois décembre de l’année N+2 (1ère semaine du mois)
+            
+            ***Flag***: Désigne les promotions de petites taille (<=20) et qui sont groupées sur deux millésimes successifs
         """)
 
 

@@ -36,6 +36,26 @@ class population:
 
         return df_libelle
     
+    def millesime(self):
+        # Grouper par 'Libellé du diplôme' et "Année(s) d'obtention du diplôme prise(s) en compte"
+        df_millesime = self.df.groupby(
+            ["Année(s) d'obtention du diplôme prise(s) en compte"]
+        ).agg({
+            'Nombre de sortants': 'sum',
+            'Nombre de poursuivants': 'sum',
+            'Mois après la diplomation': 'nunique'
+        }).reset_index()
+
+        # Diviser le nombre de sortants et poursuivants par le nombre de mois uniques
+        df_millesime['Nombre de sortants'] = df_millesime['Nombre de sortants'] / df_millesime['Mois après la diplomation']
+        df_millesime['Nombre de poursuivants'] = df_millesime['Nombre de poursuivants'] / df_millesime['Mois après la diplomation']
+        df_millesime['Nombre de sortants'] = df_millesime['Nombre de sortants'].round(0)
+        df_millesime['Nombre de poursuivants'] = df_millesime['Nombre de poursuivants'].round(0)
+        # Supprimer la colonne "Mois après la diplomation" après l'opération
+        df_millesime.drop(columns=['Mois après la diplomation'], inplace=True)
+
+        return df_millesime
+    
     def academie(self):
         # Créer la nouvelle colonne 'Annee_groupée' basée sur la dernière année (2020, 2021, etc.)
         self.df['Annee_groupée'] = np.where(
@@ -92,7 +112,8 @@ class population:
         # Diviser le nombre de sortants et poursuivants par le nombre de mois uniques
         df_region['Nombre de sortants'] = df_region['Nombre de sortants'] / df_region['Mois après la diplomation']
         df_region['Nombre de poursuivants'] = df_region['Nombre de poursuivants'] / df_region['Mois après la diplomation']
-
+        df_region['Nombre de sortants'] = df_region['Nombre de sortants'].round(0)
+        df_region['Nombre de poursuivants'] = df_region['Nombre de poursuivants'].round(0)
         # Supprimer la colonne "Mois après la diplomation" après l'opération
         df_region.drop(columns=['Mois après la diplomation'], inplace=True)
 
@@ -197,10 +218,73 @@ class population:
 
         return self.df
 
-    """ appel des fonctions depuis les pages de vue :
-     Créer une instance de la classe population
-    pop = population(df)
-    # Appeler la méthode libelle et afficher les résultats
-    df_region = pop.region()
-    st.write(df_region)
-    """ 
+    def region_discipline(self):
+            # Créer la nouvelle colonne 'Annee_groupée' basée sur la dernière année (2020, 2021, etc.)
+            self.df['Annee_groupée'] = np.where(
+                self.df['Année(s) d\'obtention du diplôme prise(s) en compte'].astype(str).str.endswith('2020'), '2020',
+                np.where(
+                    self.df['Année(s) d\'obtention du diplôme prise(s) en compte'].astype(str).str.endswith('2021'), '2021',
+                    np.where(
+                        self.df['Année(s) d\'obtention du diplôme prise(s) en compte'].astype(str).str.endswith('2022'), '2022',
+                        'Autre'
+                    )
+                )
+            )
+
+            # Grouper par 'Région', 'Domaine disciplinaire' et 'Annee_groupée'
+            df_region_discipline = self.df.groupby(
+                ["Région", 'Domaine disciplinaire', "Annee_groupée"]
+            ).agg({
+                'Nombre de sortants': 'sum',
+                'Nombre de poursuivants': 'sum',
+                'Mois après la diplomation': 'nunique'
+            }).reset_index()
+
+            # Diviser le nombre de sortants et poursuivants par le nombre de mois uniques
+            df_region_discipline['Nombre de sortants'] = df_region_discipline['Nombre de sortants'] / df_region_discipline['Mois après la diplomation']
+            df_region_discipline['Nombre de poursuivants'] = df_region_discipline['Nombre de poursuivants'] / df_region_discipline['Mois après la diplomation']
+
+            # Supprimer la colonne "Mois après la diplomation" après l'opération
+            df_region_discipline.drop(columns=['Mois après la diplomation'], inplace=True)
+
+            return df_region_discipline
+    
+    def type_diplome(self):
+            # Créer la nouvelle colonne 'Annee_groupée' basée sur la dernière année (2020, 2021, etc.)
+            self.df['Annee_groupée'] = np.where(
+                self.df['Année(s) d\'obtention du diplôme prise(s) en compte'].astype(str).str.endswith('2020'), '2020',
+                np.where(
+                    self.df['Année(s) d\'obtention du diplôme prise(s) en compte'].astype(str).str.endswith('2021'), '2021',
+                    np.where(
+                        self.df['Année(s) d\'obtention du diplôme prise(s) en compte'].astype(str).str.endswith('2022'), '2022',
+                        'Autre'
+                    )
+                )
+            )
+
+            # Grouper par 'Région', 'Domaine disciplinaire' et 'Annee_groupée'
+            df_type_diplome = self.df.groupby(
+                ["Type de diplôme", "Annee_groupée"]
+            ).agg({
+                'Nombre de sortants': 'sum',
+                'Nombre de poursuivants': 'sum',
+                'Mois après la diplomation': 'nunique'
+            }).reset_index()
+
+            # Diviser le nombre de sortants et poursuivants par le nombre de mois uniques
+            df_type_diplome['Nombre de sortants'] = df_type_diplome['Nombre de sortants'] / df_type_diplome['Mois après la diplomation']
+            df_type_diplome['Nombre de poursuivants'] = df_type_diplome['Nombre de poursuivants'] / df_type_diplome['Mois après la diplomation']
+            df_type_diplome['Nombre de sortants']=df_type_diplome['Nombre de sortants'].round(0)
+            df_type_diplome['Nombre de poursuivants']=df_type_diplome['Nombre de poursuivants'].round(0)
+            # Supprimer la colonne "Mois après la diplomation" après l'opération
+            df_type_diplome.drop(columns=['Mois après la diplomation'], inplace=True)
+
+            return df_type_diplome
+
+# appel des fonctions depuis les pages de vue :
+#Créer une instance de la classe population
+#pop = population(df)
+# Appeler la méthode libelle et afficher les résultats
+#df_region = pop.region()
+#st.write(df_region)
+        
