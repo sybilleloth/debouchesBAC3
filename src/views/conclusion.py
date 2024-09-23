@@ -13,7 +13,6 @@ def load_view():
     # Chargement des données
     csv_file = "./data/esr_intersup_nettoye 2024_09.csv"
     df = pd.read_csv(csv_file)
-
     st.title(':medal: Et pour finir...')
     st.header("Tout démarre !!! ")
 
@@ -27,27 +26,32 @@ def load_view():
         # Affichage du texte Markdown dans la deuxième colonne
         # Calcul puis affichage des différentes métriques globales relatives aux données analysées
         metriques(df)
-
-    carte()
-
-    # Diviser la page en deux colonnes
-    col3, col4 = st.columns(2)
-    with col3 : 
-        top3_formation("Libellé du diplôme", "formations","% d'emplois stables parmi les salariés en France","% d'emplois stables parmi les salariés en France",df)
-    with col4 : 
-        top3_formation("Libellé du diplôme", "formations","Mois après la diplomation","temps nécessaire à la prise de poste en emploi",df)
+    st.subheader("La vaste étendue des données du dataset ") 
+    with st.expander("Voir la répartition des lignes de données sur une carte de France") :
+        carte()
+    st.subheader("Le top 3 des diplômes ") 
+    with st.expander("Voir les lauréats à travers la période étudiée") :
+        # Diviser la page en deux colonnes
+        col3, col4 = st.columns(2)
+        with col3 : 
+            top3_formation("Libellé du diplôme", "formations","% d'emplois stables parmi les salariés en France","% d'emplois stables parmi les salariés en France",df)
+        with col4 : 
+            top3_formation("Libellé du diplôme", "formations","Mois après la diplomation","temps nécessaire à la prise de poste en emploi",df)
     
-    # Diviser la page en deux colonnes
-    st.subheader("Les régions championnes") 
-    col5, col6 = st.columns(2)
-    with col5 :
-        maxi_poursuite(df)  
-    with col6 : 
-        maxi_region(df)  
     
-    timeline(df)
-    afficher_top3_regions_par_annee_groupée(df) 
-    afficher_top3_regions_par_annee_groupée_taux_groupe(df)
+    st.subheader("Le top 3 des régions ") 
+    with st.expander("Voir les graphes pour les régions avec les taux de poursuites et les taux d'emploi moyens les plus élevés") : 
+        col5, col6 = st.columns(2)
+        with col5 :
+            maxi_poursuite(df)  
+        with col6 : 
+            maxi_region(df)  
+    with st.expander("Voir les lauréates par année et par discipline") : 
+        timeline(df)
+    with st.expander("Voir les lauréates  des taux d'emplois stables salarié par année") : 
+        afficher_top3_regions_par_annee_groupée(df) 
+    with st.expander("Voir les lauréates  taux d'emploi salarié par année") : 
+        afficher_top3_regions_par_annee_groupée_taux_groupe(df)
 
 def metriques(df):
     # Créer une instance de la classe population
@@ -129,6 +133,7 @@ def carte():
 
     # Calcul du nombre moyen de "Sortants" par "Libellé du diplôme" et par "Académie"
     moyenne_sortants_par_diplome_academie = dfc.groupby(['Académie', 'Libellé du diplôme'])['Nombre de sortants'].mean().mean().round(2)
+    
     st.write(f"Nombre moyen de Sortants par Libellé du diplôme et par Académie : {round(moyenne_sortants_par_diplome_academie)}")
 
     # Calculs par académie pour la carte
@@ -244,7 +249,8 @@ def top3_formation(criteria, texte1, cible, texte2,df):
     color_map = {
         "Licence professionnelle": "#abc837",
         "Master LMD": "#77264b",
-        "Master MEEF": "#006b80"
+        "Master MEEF": "#006b80",
+        "Licence générale": "#dd6b77"
     }
 
     # Créer un diagramme à barres groupées
@@ -270,55 +276,69 @@ def top3_formation(criteria, texte1, cible, texte2,df):
 
 def maxi_poursuite(df):
     
-    # Filtrer les données pour inclure uniquement les lignes avec un nombre de poursuivants et de sortants
+    # Filtrer les données pour ne conserver que les lignes avec un nombre de poursuivants et de sortants
     filtered_data = df.dropna(subset=['Nombre de poursuivants', 'Nombre de sortants'])
 
     # Ajouter une colonne pour calculer le taux de poursuite d'études
-    filtered_data['Taux de poursuite'] = filtered_data['Nombre de poursuivants'] / filtered_data['Nombre de sortants'] * 100
+    filtered_data['Taux de poursuite'] = filtered_data['Nombre de poursuivants'] / (filtered_data['Nombre de sortants']+filtered_data['Nombre de poursuivants']) * 100
+
+    # Calculer le taux de poursuite moyen global
+    global_poursuit_tx = filtered_data['Taux de poursuite'].mean()
 
     # Grouper les données par région et calculer le taux de poursuite moyen par région
-    region_pursuit_rate = filtered_data.groupby('Région')['Taux de poursuite'].mean().reset_index()
+    region_poursuit_tx = filtered_data.groupby('Région')['Taux de poursuite'].mean().reset_index()
 
     # Trier les régions par taux de poursuite d'études décroissant
-    top_regions = region_pursuit_rate.sort_values(by='Taux de poursuite', ascending=False).head(3)
+    top_regions = region_poursuit_tx.sort_values(by='Taux de poursuite', ascending=False).head(3)
 
     # Afficher les résultats
     st.markdown("Les 3 régions avec le plus fort taux de poursuite d'études après Bac +3")
         
     # Créer un graphique avec les couleurs spécifiques et taille fixée
-    fig, ax = plt.subplots(figsize=(8, 6))
+    fig, ax = plt.subplots(figsize=(6, 6))
     colors = ["#abc837", "#77264b", "#006b80"]
-    bars = ax.bar(top_regions['Région'], top_regions['Taux de poursuite'], color=colors)
+    bars = ax.barh(top_regions['Région'], top_regions['Taux de poursuite'], color=colors)
+    
+    # Inverser l'ordre des régions pour avoir une pyramide inversée
+    ax.invert_yaxis()
     
     # Ajouter les annotations sur chaque barre
     for bar in bars:
-        height = bar.get_height()
-        ax.annotate(f'{height:.2f}%',
-                    xy=(bar.get_x() + bar.get_width() / 2, height),
+        width = bar.get_width() #au lieu de height = bar.get_height()
+        ax.annotate(f'{width:.2f}%',
+                    xy=(bar.get_x() + bar.get_width() / 2, width),
                     xytext=(0, 3),  # 3 points de décalage en vertical
                     textcoords="offset points",
-                    ha='center', va='bottom')
+                    ha='center', va='center')
+    
+    # Ajouter une ligne horizontale pour le taux de poursuite moyen global puis la légende et transposer ade ax.axhline à axvline
+    ax.axvline(global_poursuit_tx, color='red', linestyle='--', linewidth=2, label=f'Moyenne nationale: {global_poursuit_tx:.2f}%')
+    ax.legend()
 
-    ax.set_xlabel("Région")
-    ax.set_ylabel("Taux de poursuite (%)")
+    ax.set_xlabel("Taux de poursuite (%)")
+    ax.set_ylabel("Région")
     ax.set_title("Top 3 des régions par taux de poursuite d'études après Bac +3")
+
 
     # Afficher le graphique dans Streamlit
     st.pyplot(fig)
-    st.caption("le % exprimé correspond au rapport Nombre de poursuivants / Nombre de sortants")
+    st.caption("le % exprimé correspond au rapport Nombre de poursuivants / Effectif")
 
 def maxi_region(df):
        
     # Calculer le taux d'emploi moyen par région
     region_employment_rate = df.groupby('Région')['Taux d\'emploi salarié en France'].mean().reset_index()
 
+    # Calculer le taux d'emploi moyen national
+    national_employment_rate = df['Taux d\'emploi salarié en France'].mean()
+    
     # Trier les régions par taux d'emploi décroissant et sélectionner les 3 premières
     top_regions = region_employment_rate.sort_values(by='Taux d\'emploi salarié en France', ascending=False).head(3)
 
     st.markdown("Les 3 régions dont le taux d'emploi moyen est le plus favorable") 
     
     # Créer un graphique en pyramide (barh pour barres horizontales inversées) avec taille fixée
-    fig, ax = plt.subplots(figsize=(8, 6))
+    fig, ax = plt.subplots(figsize=(6, 6))
     colors = ["#abc837", "#77264b", "#006b80"]
     bars = ax.barh(top_regions['Région'], top_regions['Taux d\'emploi salarié en France'], color=colors)
 
@@ -333,7 +353,11 @@ def maxi_region(df):
                     xytext=(3, 0),  # 3 points de décalage en horizontal
                     textcoords="offset points",
                     ha='left', va='center')
-
+        
+    # Ajouter une ligne verticale rouge pour la moyenne nationale
+    ax.axvline(national_employment_rate, color='red', linestyle='--', linewidth=2, label=f'Moyenne nationale: {national_employment_rate:.2f}%')
+    # Ajouter la légende
+    ax.legend()
     ax.set_xlabel("Taux d'emploi salarié en France (%)")
     ax.set_ylabel("Région")
     ax.set_title("Top 3 des régions par taux d'emploi moyen")
@@ -342,55 +366,85 @@ def maxi_region(df):
     st.pyplot(fig)
 
 
-    st.write("Les 3 formations menant le plus rapidement les étudiants dits sortants vers la prise de poste : licence pro, Master ou MEEF")
-    st.write("Les 3 régions dont le taux d'emploi est le plus favorable sur l'ensemble des formations : licence pro, Master ou MEEF")
-    st.write("Les 3 régions menant le plus rapidement les étudiants dits sortants vers la prise de poste : licence pro, Master ou MEEF")
-    st.write("Les 3 formations comprenant le plus fort taux d'étudiants poursuivant après l'obtention de leur BAC + 3 : licence pro, Master ou MEEF")
- 
-def timeline(df):
-    st.header("Top 3 des régions par discipline et année selon la moyenne du % d'emplois stables")
+    #st.write("Les 3 formations menant le plus rapidement les étudiants dits sortants vers la prise de poste : licence pro ou générale, Master LMD ou MEEF")
+    #st.write("Les 3 régions dont le taux d'emploi est le plus favorable sur l'ensemble des formations : licence pro ou générale, Master LMD ou MEEF")
+    #st.write("Les 3 régions menant le plus rapidement les étudiants dits sortants vers la prise de poste : licence pro ou générale, Master ou MEEF")
+    #st.write("Les 3 formations comprenant le plus fort taux d'étudiants poursuivant après l'obtention de leur BAC + 3 : licence pro ou générale, Master LMD ou MEEF")
 
+def timeline(df):
+    #Top 3 des régions par discipline et année selon la moyenne du % d'emplois stables
+    
     # Vérification que les colonnes nécessaires existent dans le DataFrame
     required_columns = [
-        "Année(s) d'obtention du diplôme prise(s) en compte", "Discipline", 
-        "Région", "% d'emplois stables parmi les salariés en France"
+        "Discipline", 
+        "Année_groupée", 
+        "Région", 
+        "% d'emplois stables parmi les salariés en France"
     ]
     for col in required_columns:
         if col not in df.columns:
             st.error(f"La colonne '{col}' est manquante dans le DataFrame.")
             return
 
-    # Agréger les données par académie, discipline, année, région
+    # Agréger les données par année, discipline, région
     df_grouped = df.groupby(
-        ["Année(s) d'obtention du diplôme prise(s) en compte", "Discipline", "Région"]
+        ["Année_groupée", "Discipline", "Région"]
     ).agg({
         "% d'emplois stables parmi les salariés en France": 'mean'
     }).reset_index()
+    
+    df_grouped["% d'emplois stables parmi les salariés en France"] = df_grouped["% d'emplois stables parmi les salariés en France"].round(2)
 
-    # Trier les données pour chaque combinaison d'année et discipline par ordre décroissant du % d'emplois stables
-    df_sorted = df_grouped.sort_values(
-        by=["Année(s) d'obtention du diplôme prise(s) en compte", "Discipline", "% d'emplois stables parmi les salariés en France"],
-        ascending=[True, True, False] # Décroissant pour % d'emplois stables
+    # Permettre à le choix l'utilisateur  via selectboxes
+    available_years = df_grouped['Année_groupée'].unique()
+    selected_year = st.selectbox("Choisissez une année", available_years)
+    available_disciplines = df_grouped['Discipline'].unique()
+    selected_discipline = st.selectbox("Choisissez une discipline", available_disciplines)
+    
+    # Filtrer les données par l'année et la discipline sélectionnées
+    df_filtered = df_grouped[
+        (df_grouped['Année_groupée'] == selected_year) & 
+        (df_grouped['Discipline'] == selected_discipline)
+    ]
+    # Filtrer les données par l'année sélectionnée
+    #df_filtered = df_grouped[df_grouped['Année_groupée'] == selected_year]
+
+    # Trier les données par discipline et % d'emplois stables
+    df_sorted = df_filtered.sort_values(
+        by=["% d'emplois stables parmi les salariés en France"],
+        ascending=[False]  
     )
 
-    # Pour chaque année et chaque discipline, sélectionner les 3 premières académies
-    df_top3 = df_sorted.groupby(["Année(s) d'obtention du diplôme prise(s) en compte", "Discipline"]).head(3)
-
-    # Créer la visualisation en ligne avec Plotly
-    fig = px.line(
+    # Pour chaque discipline, sélectionner les 3 premières régions
+    df_top3 = df_sorted.groupby("Discipline").head(3)
+    
+    # Message caption si les données ne sont pas suffisamment exhaustives pour afficher 3 régions 
+    if len(df_top3) < 3:
+        st.markdown(
+            """
+            <p style="color:purple;">
+            Les données ne permettent pas une mesure sur l'ensemble des régions en 2024, 
+            mais l'enrichissement progressif des enquêtes Insertion Professionnelle (Insersup) 
+            permettra la complétude au fil des semestres.
+            </p>
+            """, unsafe_allow_html=True
+        )
+    # Créer un graphique en barres avec Plotly
+    
+    colors = ['#abc837', '#77264b', '#006b80']  # pomme, aubergine, canard / Créer une palette de couleurs personnalisée
+    fig = px.bar(
         df_top3,
-        x="Année(s) d'obtention du diplôme prise(s) en compte",
+        x="Région",
         y="% d'emplois stables parmi les salariés en France",
         color="Région",  # Couleurs différenciées par région
-        line_group="Région",  # Les lignes représentent chaque académie
-        hover_name="Région",
-        #facet_col="Discipline",  # Séparation des graphes par discipline
-        title="Top 3 des régions par discipline et année selon la moyenne du % d'emplois stables",
+        facet_col="Discipline",  # Séparation des graphes par discipline
+        title=f"Top 3 des régions par discipline pour l'année {selected_year} selon la moyenne du % d'emplois stables",
         labels={
             "% d'emplois stables parmi les salariés en France": "% d'emplois stables (moyenne)",
-            "Année(s) d'obtention du diplôme prise(s) en compte": "Année(s) d'obtention du diplôme"
+            "Région": "Région"
         },
         height=600,
+        color_discrete_sequence=colors
     )
 
     # Mettre à jour la mise en page pour une meilleure lisibilité
@@ -400,11 +454,12 @@ def timeline(df):
     st.plotly_chart(fig)
 
 def afficher_top3_regions_par_annee_groupée(df):
-    # Ajouter la colonne Année_groupée
-    df = ajouter_colonne_annee_groupée(df)
-
+    #appel fonction ajout colonne année groupée
+    pop = population(df)
+    df_group_annee = pop.group_annee()
+       
     # Agréger les données par Année_groupée, région et calculer la moyenne du % d'emplois stables
-    df_grouped = df.groupby(
+    df_grouped = df_group_annee.groupby(
         ["Année_groupée", "Région"]
     ).agg({
         "% d'emplois stables parmi les salariés en France": 'mean'
@@ -418,7 +473,7 @@ def afficher_top3_regions_par_annee_groupée(df):
 
     # Sélectionner les 3 premières régions pour chaque Année_groupée
     df_top3 = df_sorted.groupby("Année_groupée").head(3)
-
+    df_top3 ["% d'emplois stables parmi les salariés en France"]= df_top3 ["% d'emplois stables parmi les salariés en France"].round(2)
     # Afficher les résultats en tableau pour vérification
     st.write("Top 3 des régions par Année_groupée avec le % d'emplois stables le plus élevé:")
     #st.write(df_top3)
@@ -458,7 +513,7 @@ def afficher_top3_regions_par_annee_groupée_taux_groupe(df):
     # Calculer le taux pondéré par région
     df_grouped = df.groupby(["Année_groupée", "Région"]).apply(
         lambda x: pd.Series({
-            "Taux d'emploi salarié en France": (x["Taux d'emploi salarié en France"] * x["Nombre de sortants"]).sum() / x["Nombre de sortants"].sum()
+            "Taux d'emploi salarié en France": (x["Taux d'emploi salarié en France"] * x["Nombre de sortants"]).sum() / x["Nombre de sortants"].sum().round(2)
         })
     ).reset_index()
 
@@ -470,7 +525,7 @@ def afficher_top3_regions_par_annee_groupée_taux_groupe(df):
 
     # Sélectionner les 3 premières régions pour chaque Année_groupée
     df_top3 = df_sorted.groupby("Année_groupée").head(3)
-
+    df_top3 ["Taux d'emploi salarié en France"] =   df_top3 ["Taux d'emploi salarié en France"].round(2)
     # Afficher les résultats en tableau pour vérification
     st.write("Top 3 des régions par année avec le 'Taux d'emploi salarié en France' le plus élevé (pondéré par le nombre de sortants) :")
 

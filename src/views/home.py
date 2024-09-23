@@ -79,5 +79,5 @@ def load_view():
                 """)
                 st.caption(" cette application a été élaborée en septembre 2024 avec le concours d'outils open source présentés en rubrique 'MERCI' ")
 
-if __name__ == "__main__":
+if __name__ == "__main__": #par précaution sur toutes les vues au cas où le script serait importé ailleurs pour garantir son exécution automatique
     load_view()
