@@ -1,14 +1,10 @@
 import streamlit as st
-#import folium
-#from streamlit_folium import st_folium  #folium_static, Importer folium_static
 import pandas as pd
 import numpy as np
 
 import plotly.express as px
 import matplotlib.pyplot as plt
 import seaborn as sns
-#import leafmap.foliumap as leafmap
-#import pydeck as pdk
 
 import sys #pour aller chercher les classes où il faut
 sys.path.append('./src/views')
@@ -366,13 +362,13 @@ def display_spread_time(df):
                      textcoords="offset points", 
                      xytext=(0, 5), ha='center', fontsize=8)
     # Affichage des graphiques dans Streamlit
-    with st.expander("visualiser les répatyion dans le temps et par date d'insertion en emploi des sortants") :
+    with st.expander("visualiser les répartitions dans le temps et par date d'insertion en emploi des sortants") :
         st.pyplot(fig)
 
 def viz_rank_university(df):
     
     # Ajouter un graphique pour le nombre d'Etablissements par Nombre de formations
-    st.markdown("### Répartition des établissements par nombre de formations")
+    st.markdown("### Répartition des établissements par nombre de domaines disciplinaires")
     
    # Calculer le nombre de formations uniques par établissement
     df_unique_formations = df.groupby('Etablissement')['Domaine disciplinaire'].nunique().reset_index()

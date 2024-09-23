@@ -6,7 +6,7 @@ import plotly.express as px
 import matplotlib.pyplot as plt
 
 import sys #pour aller chercher les classes où il faut
-sys.path.append('./src/views')
+sys.path.append('./src/views') # répertoires à consulter pour importer les modules
 from population import population
 
 def load_view():
@@ -50,23 +50,29 @@ def load_view():
     afficher_top3_regions_par_annee_groupée_taux_groupe(df)
 
 def metriques(df):
+    # Créer une instance de la classe population
+    pop = population(df)
+    #st.write(dir(pop)) pour checker les attributs et méthodes
+    # Appeler la méthode etablissement
+
     # Calcul des différentes métriques
-    total_sortants = df["Nombre de sortants"].sum()
-    total_poursuivants = df["Nombre de poursuivants"].sum()
+    df_total_effectifs = pop.region_discipline()
+    total_sortants = int(df_total_effectifs["Nombre de sortants"].sum().round(0))
+    total_poursuivants =int(df_total_effectifs["Nombre de poursuivants"].sum().round(0))
     total_regions = df["Région"].nunique()
     total_etablissements = df["Etablissement"].nunique()
     total_academies = df["Académie"].nunique()
     total_disciplines = df["Discipline"].nunique()
     total_libelles = df["Libellé du diplôme"].nunique()
-    total_periodes = df["Année(s) d'obtention du diplôme prise(s) en compte"].nunique()
-
+    df_total_periodes = pop.group_annee() 
+    total_periodes = df_total_periodes['Année_groupée'].nunique()
     # Pondérer les taux d'emploi par le nombre de sortants
     taux_emploi_pondere = (
-        (df["Taux d'emploi salarié en France"] * df["Nombre de sortants"]).sum() / total_sortants
+        (df["Taux d'emploi salarié en France"] * df_total_effectifs["Nombre de sortants"]).sum() / total_sortants
     ).round(2)
 
     taux_emploi_stable_pondere = (
-        (df["% d'emplois stables parmi les salariés en France"] * df["Nombre de sortants"]).sum() / total_sortants
+        (df["% d'emplois stables parmi les salariés en France"] * df_total_effectifs["Nombre de sortants"]).sum() / total_sortants
     ).round(2)
 
     # Titre et sous-titre
@@ -445,8 +451,9 @@ def afficher_top3_regions_par_annee_groupée(df):
     st.plotly_chart(fig)
 
 def afficher_top3_regions_par_annee_groupée_taux_groupe(df):
-    # Ajouter la colonne Année_groupée
-    df = ajouter_colonne_annee_groupée(df)
+    # appeler le df avec Année_groupée
+    pop = population(df)
+    df =pop.group_annee()
 
     # Calculer le taux pondéré par région
     df_grouped = df.groupby(["Année_groupée", "Région"]).apply(
@@ -494,21 +501,6 @@ def afficher_top3_regions_par_annee_groupée_taux_groupe(df):
     # Afficher le graphique dans Streamlit
     st.plotly_chart(fig)
 
-def ajouter_colonne_annee_groupée(df):
-    # Créer une nouvelle colonne "Année_groupée" en fonction de la dernière année
-    df['Année_groupée'] = df["Année(s) d'obtention du diplôme prise(s) en compte"].apply(
-        lambda x: str(x)[-4:]  # Extraire les 4 derniers caractères pour récupérer l'année
-    )
-
-    # Remplacer la dernière année par 2020, 2021 ou 2022
-    df['Année_groupée'] = df['Année_groupée'].replace({
-        '2020': '2020',
-        '2021': '2021',
-        '2022': '2022'
-    })
-    
-    return df
-
 def afficher_top3_regions(df):
     # Agréger les données par année, région et calculer la moyenne du % d'emplois stables
     df_grouped = df.groupby(
@@ -547,9 +539,6 @@ def afficher_top3_regions(df):
 
     # Afficher le graphique dans Streamlit
     st.plotly_chart(fig)
-
-
-
 
 # Exécution de la fonction principale
 if __name__ == "__main__":

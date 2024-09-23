@@ -6,8 +6,8 @@ class population:
         self.df = df
 
     def libelle(self):
-        # Créer la nouvelle colonne 'Annee_groupée' basée sur la dernière année (2020, 2021, etc.)
-        self.df['Annee_groupée'] = np.where(
+        # Créer la nouvelle colonne 'Année_groupée' basée sur la dernière année (2020, 2021, etc.)
+        self.df['Année_groupée'] = np.where(
             self.df['Année(s) d\'obtention du diplôme prise(s) en compte'].astype(str).str.endswith('2020'), '2020',
             np.where(
                 self.df['Année(s) d\'obtention du diplôme prise(s) en compte'].astype(str).str.endswith('2021'), '2021',
@@ -18,9 +18,9 @@ class population:
             )
         )
 
-        # Grouper par 'Libellé du diplôme' et 'Annee_groupée'
+        # Grouper par 'Libellé du diplôme' et 'Année_groupée'
         df_libelle = self.df.groupby(
-            ["Libellé du diplôme", "Annee_groupée"]
+            ["Libellé du diplôme", "Année_groupée"]
         ).agg({
             'Nombre de sortants': 'sum',
             'Nombre de poursuivants': 'sum',
@@ -57,8 +57,8 @@ class population:
         return df_millesime
     
     def academie(self):
-        # Créer la nouvelle colonne 'Annee_groupée' basée sur la dernière année (2020, 2021, etc.)
-        self.df['Annee_groupée'] = np.where(
+        # Créer la nouvelle colonne 'Année_groupée' basée sur la dernière année (2020, 2021, etc.)
+        self.df['Année_groupée'] = np.where(
             self.df['Année(s) d\'obtention du diplôme prise(s) en compte'].astype(str).str.endswith('2020'), '2020',
             np.where(
                 self.df['Année(s) d\'obtention du diplôme prise(s) en compte'].astype(str).str.endswith('2021'), '2021',
@@ -69,9 +69,9 @@ class population:
             )
         )
 
-        # Grouper par 'Academie' et 'Annee_groupée'
+        # Grouper par 'Academie' et 'Année_groupée'
         df_academie = self.df.groupby(
-            ["Académie", "Annee_groupée"]
+            ["Académie", "Année_groupée"]
         ).agg({
             'Nombre de sortants': 'sum',
             'Nombre de poursuivants': 'sum',
@@ -88,8 +88,8 @@ class population:
         return df_academie  
     
     def region(self):
-        # Créer la nouvelle colonne 'Annee_groupée' basée sur la dernière année (2020, 2021, etc.)
-        self.df['Annee_groupée'] = np.where(
+        # Créer la nouvelle colonne 'Année_groupée' basée sur la dernière année (2020, 2021, etc.)
+        self.df['Année_groupée'] = np.where(
             self.df['Année(s) d\'obtention du diplôme prise(s) en compte'].astype(str).str.endswith('2020'), '2020',
             np.where(
                 self.df['Année(s) d\'obtention du diplôme prise(s) en compte'].astype(str).str.endswith('2021'), '2021',
@@ -100,9 +100,9 @@ class population:
             )
         )
 
-        # Grouper par 'Région' et 'Annee_groupée'
+        # Grouper par 'Région' et 'Année_groupée'
         df_region = self.df.groupby(
-            ["Région", "Annee_groupée"]
+            ["Région", "Année_groupée"]
         ).agg({
             'Nombre de sortants': 'sum',
             'Nombre de poursuivants': 'sum',
@@ -120,8 +120,8 @@ class population:
         return df_region
     
     def discipline(self):
-        # Créer la nouvelle colonne 'Annee_groupée' basée sur la dernière année (2020, 2021, etc.)
-        self.df['Annee_groupée'] = np.where(
+        # Créer la nouvelle colonne 'Année_groupée' basée sur la dernière année (2020, 2021, etc.)
+        self.df['Année_groupée'] = np.where(
             self.df['Année(s) d\'obtention du diplôme prise(s) en compte'].astype(str).str.endswith('2020'), '2020',
             np.where(
                 self.df['Année(s) d\'obtention du diplôme prise(s) en compte'].astype(str).str.endswith('2021'), '2021',
@@ -132,9 +132,9 @@ class population:
             )
         )
 
-        # Grouper par 'Région' et 'Annee_groupée'
+        # Grouper par 'Région' et 'Année_groupée'
         df_discipline = self.df.groupby(
-            ["Région", "Annee_groupée"]
+            ["Région", "Année_groupée"]
         ).agg({
             'Nombre de sortants': 'sum',
             'Nombre de poursuivants': 'sum',
@@ -151,8 +151,8 @@ class population:
         return df_discipline
     
     def domaine_discipline(self):
-        # Créer la nouvelle colonne 'Annee_groupée' basée sur la dernière année (2020, 2021, etc.)
-        self.df['Annee_groupée'] = np.where(
+        # Créer la nouvelle colonne 'Année_groupée' basée sur la dernière année (2020, 2021, etc.)
+        self.df['Année_groupée'] = np.where(
             self.df['Année(s) d\'obtention du diplôme prise(s) en compte'].astype(str).str.endswith('2020'), '2020',
             np.where(
                 self.df['Année(s) d\'obtention du diplôme prise(s) en compte'].astype(str).str.endswith('2021'), '2021',
@@ -163,9 +163,9 @@ class population:
             )
         )
 
-        # Grouper par 'Domaine disciplinaire' et 'Annee_groupée'
+        # Grouper par 'Domaine disciplinaire' et 'Année_groupée'
         df_domaine_discipline = self.df.groupby(
-            ["Domaine disciplinaire", "Annee_groupée"]
+            ["Domaine disciplinaire", "Année_groupée"]
         ).agg({
             'Nombre de sortants': 'sum',
             'Nombre de poursuivants': 'sum',
@@ -182,8 +182,8 @@ class population:
         return df_domaine_discipline
     
     def etablissement(self):
-        # Créer la nouvelle colonne 'Annee_groupée' basée sur la dernière année (2020, 2021, etc.)
-        self.df['Annee_groupée'] = np.where(
+        # Créer la nouvelle colonne 'Année_groupée' basée sur la dernière année (2020, 2021, etc.)
+        self.df['Année_groupée'] = np.where(
             self.df['Année(s) d\'obtention du diplôme prise(s) en compte'].astype(str).str.endswith('2020'), '2020',
             np.where(
                 self.df['Année(s) d\'obtention du diplôme prise(s) en compte'].astype(str).str.endswith('2021'), '2021',
@@ -194,9 +194,9 @@ class population:
             )
         )
 
-        # Grouper par 'Etablissement', 'Annee_groupée', 'Libellé du diplôme' et calculer la moyenne
+        # Grouper par 'Etablissement', 'Année_groupée', 'Libellé du diplôme' et calculer la moyenne
         df_etablissement = self.df.groupby(
-            ["Etablissement", "Annee_groupée", "Libellé du diplôme"]
+            ["Etablissement", "Année_groupée", "Libellé du diplôme"]
         ).agg({
             'Nombre de sortants': 'mean',  # Calculer la moyenne des sortants
             'Nombre de poursuivants': 'mean',  # Calculer la moyenne des poursuivants
@@ -211,16 +211,14 @@ class population:
 
     def group_annee(self):
         # ne conserver que les 4 derniers caractères des années pour regrouper par année
-        self.df['Annee_groupée'] = self.df['Année(s) d\'obtention du diplôme prise(s) en compte'].astype(str).str[-4:]
-
-        # Filtrer les années qui ne sont ni 2020, ni 2021, ni 2022
-        #self.df['Annee_groupée'] = self.df['Annee_groupée'].where(self.df['Annee_groupée'].isin(['2020', '2021', '2022']), 'Autre')
-
+        self.df['Année_groupée'] = self.df["Année(s) d'obtention du diplôme prise(s) en compte"].apply(
+        lambda x: str(x)[-4:])
+        
         return self.df
 
     def region_discipline(self):
-            # Créer la nouvelle colonne 'Annee_groupée' basée sur la dernière année (2020, 2021, etc.)
-            self.df['Annee_groupée'] = np.where(
+            # Créer la nouvelle colonne 'Année_groupée' basée sur la dernière année (2020, 2021, etc.)
+            self.df['Année_groupée'] = np.where(
                 self.df['Année(s) d\'obtention du diplôme prise(s) en compte'].astype(str).str.endswith('2020'), '2020',
                 np.where(
                     self.df['Année(s) d\'obtention du diplôme prise(s) en compte'].astype(str).str.endswith('2021'), '2021',
@@ -231,9 +229,9 @@ class population:
                 )
             )
 
-            # Grouper par 'Région', 'Domaine disciplinaire' et 'Annee_groupée'
+            # Grouper par 'Région', 'Domaine disciplinaire' et 'Année_groupée'
             df_region_discipline = self.df.groupby(
-                ["Région", 'Domaine disciplinaire', "Annee_groupée"]
+                ["Région", 'Domaine disciplinaire', "Année_groupée"]
             ).agg({
                 'Nombre de sortants': 'sum',
                 'Nombre de poursuivants': 'sum',
@@ -250,8 +248,8 @@ class population:
             return df_region_discipline
     
     def type_diplome(self):
-            # Créer la nouvelle colonne 'Annee_groupée' basée sur la dernière année (2020, 2021, etc.)
-            self.df['Annee_groupée'] = np.where(
+            # Créer la nouvelle colonne 'Année_groupée' basée sur la dernière année (2020, 2021, etc.)
+            self.df['Année_groupée'] = np.where(
                 self.df['Année(s) d\'obtention du diplôme prise(s) en compte'].astype(str).str.endswith('2020'), '2020',
                 np.where(
                     self.df['Année(s) d\'obtention du diplôme prise(s) en compte'].astype(str).str.endswith('2021'), '2021',
@@ -262,9 +260,9 @@ class population:
                 )
             )
 
-            # Grouper par 'Région', 'Domaine disciplinaire' et 'Annee_groupée'
+            # Grouper par 'Région', 'Domaine disciplinaire' et 'Année_groupée'
             df_type_diplome = self.df.groupby(
-                ["Type de diplôme", "Annee_groupée"]
+                ["Type de diplôme", "Année_groupée"]
             ).agg({
                 'Nombre de sortants': 'sum',
                 'Nombre de poursuivants': 'sum',

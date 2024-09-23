@@ -35,9 +35,7 @@ Do execute the following commands in the forthcoming proper ordre :
 - set-up libraries as listed in requirements.txt and initiate the database :
 
 `pip install --update pip`
-
 `pip install -r requirements.txt`
-
 `python3 setup.py`
 'from your directory : `cd {your_directory}`
 - check the existing files with ' `ls` command 
@@ -69,6 +67,11 @@ Step 4 : it's worth checking !
 
 Step 5 : if you want to disactivate the environment
 ---'deactivate'
+
+### Tools & others specifics 
+The font is the EXO google's font : Exo set up in the app (all files included). It's employed as it is a free one, available for all kind of machines and OS Systems
+
+The python language is V.3.12
 
 
 Enjoy ! 

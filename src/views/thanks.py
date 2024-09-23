@@ -14,9 +14,10 @@ def load_view():
     with col2:
         # retrouver les liens des emojis ici : https://streamlit-emoji-shortcodes-streamlit-app-gwckff.streamlit.app/
         st.header('Un environnement humain et technique enthousiasmant :sparkles:')
-        st.subheader (':one: Les pictos et les couleurs')
+        st.subheader (':one: Les pictos, couleurs et la police')
         st.markdown ("Les pictos et les codes de la charte graphique sont conçus maison à partir de l'outil ***Inkscape***.")
         st.image('./src/assets/images/palette_color.png', width=400)
+        st.markdown ("La police est ***Exo***, libre de droits.")
         st.write("")
         
         st.subheader (':three: Les outils de code')

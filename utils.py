@@ -5,7 +5,7 @@ from streamlit.components.v1 import html
 from PATHS import NAVBAR_PATHS, SETTINGS #fichier correspondance entre titres du menu et nom des pages d'exécution et visualisation
 
 
-def inject_custom_css(): #injection des styles CSS dans l'app par la lecture du chier css : styles puis en l'injectant dans le HTML de l'app via st.markdown avec le paramètre unsafe_allow_html=True
+def inject_custom_css(): #injection des styles CSS dans l'app par la lecture du fichier css : styles puis en l'injectant dans le HTML de l'app via st.markdown avec le paramètre unsafe_allow_html=True
     with open('src/assets/styles.css') as f:
         st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True) 
         # écrire du Markdown/html etc. dans l'application
@@ -16,8 +16,8 @@ def navbar_component(): #créer la barre de navigation dans STr. avec gestion dy
     # Elle utilise une combinaison de HTML, CSS, JavaScript et Streamlit 
     with open("src/assets/images/picto reglage sdl.png", "rb") as image_file: #ouverture du fichier puis lecture en binaire 
         image_as_base64 = base64.b64encode(image_file.read()) #encodage de l'image en base 64
-        #with donc fermeture du fichier
-
+        #with -> fermeture du fichier
+#   génération dynamique des liens de navigation dans l'app web à partir du dictionnaire de chemins dans fichiers PATHS (menu du haut) et SETTINGS (sous la roue)
     navbar_items = ''
     for key, value in NAVBAR_PATHS.items():
         navbar_items += (f'<a class="navitem" href="/?nav=%2F{value}">{key}</a>')

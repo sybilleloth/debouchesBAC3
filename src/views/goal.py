@@ -4,8 +4,10 @@ import numpy as np
 
 
 def load_view():    
-    st.title(":dart: Tour d'horizon des débouchés des formations licences professionnelles, Master LMD et Master MEEF dispensées par les établissements d'enseignement supérieur")
-    
+    st.title(":dart: Tour d'horizon des débouchés des formations licences professionnelles, générales, Master LMD et MEEF dispensées par les établissements d'enseignement supérieur")
+    st.markdown("""
+    ### 1 - Introduction 
+    """)
     with st.expander("Contexte et objectif du projet"):
         st.markdown("### 1 : Introduction : pourquoi ? \n La pratique professionnelle met en lumière combien la formation générale et technique reste malgré tous les bouleversements économiques, sanitaires, innovants... essentielle au démarrage d'une vie professionnelle.    \nLes carrières individuelles peuvent souvent ne pas être linéaires! Or, notre système éducatif supérieur français ouvre un champ très large aux jeunes dans le choix des formations et de leurs spécialités.  \nCeci pose la question de l'égalité des chances à l'entrée dans le monde du travail que nous considérerons (pour les besoins de l'exercice) au démarrage d'une carrière, comme celui de l'entrée dans le système salarié.    \n")
 
@@ -13,7 +15,9 @@ def load_view():
 
         st.markdown("### 3 : Quelle base de travail ? \n Nous disposons d'un jeu de données publié au second semestre 2024 (13 août 2024) sur le site data.gouv.fr \n")
 
-    st.title("Présentation du dataset (jeu de données) original")
+    st.markdown("""
+    ### 2 - Présentation du dataset (jeu de données) original 
+    """)
     csv_file = "./data/fr-esr-insersup 2024_09.csv"
     
     try:
@@ -25,7 +29,7 @@ def load_view():
     except Exception as e:
         print(f"Une erreur est survenue lors du chargement du fichier en page goal : {e}")
         df = None
-
+    
     with st.expander("Description du dataset"):
         st.markdown("Les résultats présentés sont issus de l'enquête nationale sur l'insertion professionnelle des diplômés de l’université...")
 
@@ -82,7 +86,7 @@ def legendes():
 
 
 def dwnload():
-    fichier_url = "https://raw.githubusercontent.com/datarockstars/projet-fil-rouge-sybilleloth/refs/heads/main/data/fr-esr-insersup%202024_09.csv?token=GHSAT0AAAAAACWWH4A75U34FA5DDJ25PT7EZXK4ERA"
+    fichier_url = "https://data.enseignementsup-recherche.gouv.fr/api/explore/v2.1/catalog/datasets/fr-esr-insersup/exports/csv?lang=fr&timezone=Europe%2FBerlin&use_labels=true&delimiter=%3B"
     st.markdown(f"""
         <a href="{fichier_url}" download>
             <button style="padding:10px 20px; font-size:18px;">Télécharger le fichier CSV</button>

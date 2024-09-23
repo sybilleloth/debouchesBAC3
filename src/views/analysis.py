@@ -1,7 +1,5 @@
 import streamlit as st
 import pandas as pd
-#import numpy as np
-#import re
 
 # visualisation 
 import plotly.express as px
@@ -10,6 +8,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import plotly.graph_objects as go
 import plotly.express as px
+
 #classes
 import sys #pour aller chercher les classes où il faut
 sys.path.append('./src/views')
@@ -302,11 +301,11 @@ def viz_rank_university(df):
     # Appeler la méthode etablissement
     df_etablissement = pop.etablissement()  # Notez les parenthèses car c'est une méthode
     #st.write(df_etablissement) pour check
-    # Utiliser la colonne 'Annee_groupée' pour l'analyse
-    #df_etablissement['Année'] = df_etablissement["Annee_groupée"]
+    # Utiliser la colonne 'Année_groupée' pour l'analyse
+    #df_etablissement['Année'] = df_etablissement["Année_groupée"]
 
     # Calculer le total des "Nombre de sortants" + "Nombre de poursuivants" par établissement et par année
-    df_grouped = df_etablissement.groupby(["Etablissement","Annee_groupée"]).agg({
+    df_grouped = df_etablissement.groupby(["Etablissement","Année_groupée"]).agg({
         'Nombre de poursuivants': 'sum',
         'Nombre de sortants': 'sum'
     }).reset_index()
@@ -432,6 +431,7 @@ def viz_rank_university_avge(df):
 
     # Calculer le nombre moyen de sortants par formation
     df_grouped['Nombre moyen de sortants par formation'] = df_grouped['Nombre de sortants'] / df_grouped['Nombre de formations uniques']
+    df_grouped['Nombre moyen de sortants par formation'] =df_grouped['Nombre moyen de sortants par formation'].round()
 
     # Ajouter une colonne pour le total des sortants et poursuivants
     df_grouped['Total Sortants + Poursuivants'] = df_grouped['Nombre de poursuivants'] + df_grouped['Nombre de sortants']
