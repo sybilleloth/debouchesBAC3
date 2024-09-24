@@ -151,7 +151,7 @@ def display_factor(df):
     pop = population(df)
     #st.write(dir(pop)) pour checker les attributs et méthodes
     # Appeler la méthode etablissement
-    df_region_discipline = pop.region_discipline()  # Notez les parenthèses car c'est une méthode
+    df_region_discipline = pop.region_discipline()  # appel méthode
     #st.write(df_region_discipline) #pour check
     with st.expander("détail") :
         # Calculer le nombre de sortants globalement
