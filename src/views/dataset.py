@@ -1,3 +1,4 @@
+#code avant allègement 
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -29,8 +30,9 @@ def load_view():
     print("Fichier avec coordonnées gps chargé avec succès pour page dataset.")
     df_cities = df_cities
     
-  
-# affichage et appel pour la vue de la page dataset et appel des fonctions
+
+#-------Partie 1 - cleaned dataset introduction
+    # affichage et appel pour la vue de la page dataset et appel des fonctions
     st.title(':label: Présentation du jeu de données nettoyé')
     
     st.markdown("""
@@ -49,14 +51,20 @@ def load_view():
                 ### 3. Carte géographique de répartition des lignes du jeu de données par académie en France\n Cette carte du monde présente la répartition géographique des lignes du jeu de données. Il vous suffit de régler le zoom pour visualiser les DROM-COM.
                 """)
     display_map_plotly(df_cities) #carte interactive montant la répartion du nombre de lignes du dataset par académie
-    
+
+
+#-------Partie 2 - views as to master the dataset
     st.header("Visualisations facilitant la prise de connaissance des données\n")
+    distribution_effectif(df)
+    
+    st.subheader("Liens entre les variables du jeu de données\n")
     with st.expander("afficher les vues"):
         col1, col2 = st.columns(2)
         with col1:
             display_corr_var(df)
         with col2:
             data_heat(df)
+    
     display_factor(df)
     
     st.markdown("""
@@ -70,13 +78,44 @@ def load_view():
         with st.expander( "voir le graphe par région" ):
             sortantspoursuivantsregion(df)
     display_majors(df)
-
     display_spread_time(df)
-     
     viz_rank_university(df)
     
+def distribution_effectif(df):
+    # Vérifier si les colonnes nécessaires existent dans le DataFrame
+    st.markdown("### Analyse et répartition des effectifs, population de l'étude ###")
 
+    if {'Nombre de sortants', 'Nombre de poursuivants', 'Mois après la diplomation'}.issubset(df.columns):
+        # Récupérer les valeurs uniques de la colonne 'Mois après la diplomation'
+        mois_unique = df['Mois après la diplomation'].unique()
+        with st.expander("Voir la répartition telle que l'enquête a été menée") : 
+            st.write(f"Valeurs uniques des mois après la diplomation : {mois_unique}")
+  
+            # Regrouper les données par 'Mois après la diplomation' pour calculer les effectifs cumulés
+            df_grouped = df.groupby('Mois après la diplomation')[['Nombre de sortants', 'Nombre de poursuivants']].sum().reset_index()
+            population = df_grouped["Nombre de sortants"].max()+ df_grouped["Nombre de poursuivants"].max()
+            st.write(f"Population étudiée : {population} personnes")
+            col11, col12 = st.columns(2)
+            with col11 : 
+                # Afficher les données groupées
+                st.write(df_grouped)
+            with col12 : 
+                # Création du graphique
+                fig, ax = plt.subplots(figsize=(10, 6))
+                ax.plot(df_grouped['Mois après la diplomation'], df_grouped['Nombre de sortants'], marker='o', label='Nombre de sortants', color='blue')
+                ax.plot(df_grouped['Mois après la diplomation'], df_grouped['Nombre de poursuivants'], marker='o', label='Nombre de poursuivants', color='green')
 
+                # Ajouter des titres et des légendes
+                ax.set_xlabel("Mois après la diplomation")
+                ax.set_ylabel("Effectifs")
+                ax.set_title("Distribution des effectifs par mois après la diplomation")
+                ax.legend()
+
+                # Afficher le graphique dans Streamlit
+                st.pyplot(fig)
+
+    else:
+        st.error("Les colonnes 'Nombre de sortants', 'Nombre de poursuivants', et 'Mois après la diplomation' doivent être présentes dans le DataFrame.")
 
 def sortantspoursuivantstypediplome(df):
     st.markdown("### Répartition des effectifs par type de diplôme")
