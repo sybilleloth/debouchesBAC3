@@ -54,9 +54,9 @@ def load_view():
 
 
 #-------Partie 2 - views as to master the dataset
-    st.header("Visualisations facilitant la prise de connaissance des données\n")
+    st.header("👀	Visualisations facilitant la prise de connaissance des données\n") #téléchargement ici : https://unicode.org/emoji/charts/full-emoji-list.html
     distribution_effectif(df)
-    
+    distribution_effectif_par_annee(df)
     st.subheader("Liens entre les variables du jeu de données\n")
     with st.expander("afficher les vues"):
         col1, col2 = st.columns(2)
@@ -87,10 +87,8 @@ def distribution_effectif(df):
 
     if {'Nombre de sortants', 'Nombre de poursuivants', 'Mois après la diplomation'}.issubset(df.columns):
         # Récupérer les valeurs uniques de la colonne 'Mois après la diplomation'
-        mois_unique = df['Mois après la diplomation'].unique()
+        
         with st.expander("Voir la répartition telle que l'enquête a été menée") : 
-            st.write(f"Valeurs uniques des mois après la diplomation : {mois_unique}")
-  
             # Regrouper les données par 'Mois après la diplomation' pour calculer les effectifs cumulés
             df_grouped = df.groupby('Mois après la diplomation')[['Nombre de sortants', 'Nombre de poursuivants']].sum().reset_index()
             population = df_grouped["Nombre de sortants"].max()+ df_grouped["Nombre de poursuivants"].max()
@@ -100,10 +98,12 @@ def distribution_effectif(df):
                 # Afficher les données groupées
                 st.write(df_grouped)
             with col12 : 
+                # Palette de couleurs personnalisée
+                colors = ['#abc837', '#77264b']  # Pomme, Aubergine
                 # Création du graphique
                 fig, ax = plt.subplots(figsize=(10, 6))
-                ax.plot(df_grouped['Mois après la diplomation'], df_grouped['Nombre de sortants'], marker='o', label='Nombre de sortants', color='blue')
-                ax.plot(df_grouped['Mois après la diplomation'], df_grouped['Nombre de poursuivants'], marker='o', label='Nombre de poursuivants', color='green')
+                ax.plot(df_grouped['Mois après la diplomation'], df_grouped['Nombre de sortants'], marker='o', label='Nombre de sortants', color=colors[1])
+                ax.plot(df_grouped['Mois après la diplomation'], df_grouped['Nombre de poursuivants'], marker='o', label='Nombre de poursuivants',color=colors[0])
 
                 # Ajouter des titres et des légendes
                 ax.set_xlabel("Mois après la diplomation")
@@ -113,9 +113,54 @@ def distribution_effectif(df):
 
                 # Afficher le graphique dans Streamlit
                 st.pyplot(fig)
-
+        
+        
     else:
         st.error("Les colonnes 'Nombre de sortants', 'Nombre de poursuivants', et 'Mois après la diplomation' doivent être présentes dans le DataFrame.")
+
+def distribution_effectif_par_annee(df):
+    st.markdown("### Evolution annuelle de la population étudiée ###")
+    
+    # Créer une instance de la classe population
+    pop = population(df)  # Ici, 'population' fait référence à une classe ou un module
+    
+    # Appeler la méthode millesime pour obtenir les données par année
+    df_millesime = pop.millesime()
+    
+    # Palette de couleurs personnalisée
+    colors = ['#abc837', '#77264b']  # Pomme, Aubergine
+    
+    # Vérifier si les colonnes nécessaires sont présentes dans le DataFrame df_millesime
+    if {'Nombre de sortants', 'Nombre de poursuivants', 'Année(s) d\'obtention du diplôme prise(s) en compte'}.issubset(df_millesime.columns):
+        # Regrouper les données par année pour calculer les effectifs cumulés
+        df_grouped = df_millesime.groupby('Année(s) d\'obtention du diplôme prise(s) en compte')[['Nombre de sortants', 'Nombre de poursuivants']].sum().reset_index()
+        
+        # Calculer la population totale étudiée (somme de tous les sortants et poursuivants)
+        population_totale = df_grouped["Nombre de sortants"].sum() + df_grouped["Nombre de poursuivants"].sum()
+        st.write(f"Population totale étudiée : {population_totale}")
+        with st.expander("Voir l'évolution annuelle de la population étudiée") :
+            col13, col14 = st.columns(2)
+            with col13 : 
+                st.write(f"Population totale étudiée : {population_totale}")
+                # Afficher les données groupées par année
+                st.write(df_grouped)
+            with col14 : 
+                # Création du graphique
+                fig, ax = plt.subplots(figsize=(10, 6))
+                ax.plot(df_grouped['Année(s) d\'obtention du diplôme prise(s) en compte'], df_grouped['Nombre de sortants'], marker='o', label='Nombre de sortants', color=colors[1])
+                ax.plot(df_grouped['Année(s) d\'obtention du diplôme prise(s) en compte'], df_grouped['Nombre de poursuivants'], marker='o', label='Nombre de poursuivants', color=colors[0])
+
+                # Ajouter des titres et des légendes
+                ax.set_xlabel("Année(s) d'obtention du diplôme")
+                ax.set_ylabel("Effectifs")
+                ax.set_title("Distribution des effectifs par année d'obtention du diplôme")
+                ax.legend()
+
+                # Afficher le graphique dans Streamlit
+                st.pyplot(fig)
+
+    else:
+        st.error("Les colonnes 'Nombre de sortants', 'Nombre de poursuivants', et 'Année(s) d\'obtention du diplôme prise(s) en compte' doivent être présentes dans le DataFrame.")
 
 def sortantspoursuivantstypediplome(df):
     st.markdown("### Répartition des effectifs par type de diplôme")
@@ -228,45 +273,45 @@ def display_factor(df):
             st.markdown(f"**Le nombre total de spécialités étudiées est de :** **{df['Libellé du diplôme'].nunique():,}**")
             st.markdown(f"**Réparties entre :** **{df['Domaine disciplinaire'].nunique():,}** **domaines disciplinaires**")
  
-    # Filtrer le DataFrame pour le premier graphique : "Tous domaines disciplinaires"
-    df_tous_domaines =  df_region_discipline[( df_region_discipline["Domaine disciplinaire"] == "Tous domaines disciplinaires")]
+        # Filtrer le DataFrame pour le premier graphique : "Tous domaines disciplinaires"
+        df_tous_domaines =  df_region_discipline[( df_region_discipline["Domaine disciplinaire"] == "Tous domaines disciplinaires")]
 
-    # Filtrer le DataFrame pour le second graphique : Toutes les autres valeurs
-    df_autres_domaines = df_region_discipline[( df_region_discipline["Domaine disciplinaire"] != "Tous domaines disciplinaires")]
+        # Filtrer le DataFrame pour le second graphique : Toutes les autres valeurs
+        df_autres_domaines = df_region_discipline[( df_region_discipline["Domaine disciplinaire"] != "Tous domaines disciplinaires")]
     
-    # Calculer les limites pour l'axe x du second graphique
-    min_sortants = df_autres_domaines["Nombre de sortants"].min() - 10
-    max_sortants = df_autres_domaines["Nombre de sortants"].max() + 10
+        # Calculer les limites pour l'axe x du second graphique
+        min_sortants = df_autres_domaines["Nombre de sortants"].min() - 10
+        max_sortants = df_autres_domaines["Nombre de sortants"].max() + 10
     
-    # Création de la figure pour contenir les deux graphiques
-    fig, axes = plt.subplots(2, 1, figsize=(20, 10), sharex=False)  # Ne pas partager l'axe x
+        # Création de la figure pour contenir les deux graphiques
+        fig, axes = plt.subplots(2, 1, figsize=(20, 10), sharex=False)  # Ne pas partager l'axe x
     
-    # Définir la couleur pour le premier graphique (vert RVBA = #abc837ff)
-    #custom_palette = {"National": "#abc837ff"}
+        # Définir la couleur pour le premier graphique (vert RVBA = #abc837ff)
+        #custom_palette = {"National": "#abc837ff"}
     
-    # Premier graphique (avec couleur personnalisée)palette=custom_palette
-    sns.barplot(x="Nombre de sortants", y="Domaine disciplinaire", hue="Région", data=df_tous_domaines, ax=axes[0] )
-    axes[0].set_title("Graphique pour 'Tous domaines disciplinaires'")
-    axes[0].legend_.remove()  # On enlève la légende du premier graphique
+        # Premier graphique (avec couleur personnalisée)palette=custom_palette
+        sns.barplot(x="Nombre de sortants", y="Domaine disciplinaire", hue="Région", data=df_tous_domaines, ax=axes[0] )
+        axes[0].set_title("Graphique pour 'Tous domaines disciplinaires'")
+        axes[0].legend_.remove()  # On enlève la légende du premier graphique
     
-    # Second graphique (avec ajustement de l'axe x)
-    sns.barplot(x="Nombre de sortants", y="Domaine disciplinaire", hue="Région", data=df_autres_domaines, ax=axes[1])
-    axes[1].set_title("Graphique pour les autres domaines disciplinaires")
-    axes[1].legend_.remove()  # On enlève la légende du second graphique
+        # Second graphique (avec ajustement de l'axe x)
+        sns.barplot(x="Nombre de sortants", y="Domaine disciplinaire", hue="Région", data=df_autres_domaines, ax=axes[1])
+        axes[1].set_title("Graphique pour les autres domaines disciplinaires")
+        axes[1].legend_.remove()  # On enlève la légende du second graphique
     
-    # Ajustement des limites de l'axe x du second graphique uniquement
-    axes[1].set_xlim(min_sortants, max_sortants)
+        # Ajustement des limites de l'axe x du second graphique uniquement
+        axes[1].set_xlim(min_sortants, max_sortants)
     
-    # Ajout d'une légende commune sous les graphiques (sur 2 lignes)
-    handles, labels = axes[1].get_legend_handles_labels()
-    num_labels = len(labels)
-    fig.legend(handles, labels, loc='lower center', ncol=(num_labels // 2) + (num_labels % 2), bbox_to_anchor=(0.5, -0.15))
+        # Ajout d'une légende commune sous les graphiques (sur 2 lignes)
+        handles, labels = axes[1].get_legend_handles_labels()
+        num_labels = len(labels)
+        fig.legend(handles, labels, loc='lower center', ncol=(num_labels // 2) + (num_labels % 2), bbox_to_anchor=(0.5, -0.15))
     
-    # Ajustement de la disposition des graphiques
-    plt.tight_layout(rect=[0, 0, 1, 0.95])
+        # Ajustement de la disposition des graphiques
+        plt.tight_layout(rect=[0, 0, 1, 0.95])
     
-    # Affichage du graphique dans Streamlit
-    st.pyplot(fig)
+        # Affichage du graphique dans Streamlit
+        st.pyplot(fig)
 
 def display_majors(df) :
 
