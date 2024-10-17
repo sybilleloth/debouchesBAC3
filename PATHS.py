@@ -9,6 +9,7 @@ NAVBAR_PATHS = {
 
 SETTINGS = {
     'MERCI':'/thanks',  
+    'GERER LE CACHE' : '/managecache',
     'DECONNEXION':'/logout'
 }
  

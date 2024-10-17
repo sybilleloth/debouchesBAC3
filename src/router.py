@@ -10,9 +10,8 @@ def get_route():
 
 def redirect(new_route, reload=False):
     if new_route[0] != "/":
-        new_route = "/" + new_route
-    st.query_params["nav"]=(new_route)   
-    # remplace l'ancienne commande st.experimental_set_query_params(nav=new_route)
+        new_route = "/" + new_route #nouveau chemin pour rediriger l'utilisateur et"/" au début de la chaîne pour s'assurer que le format est correct pour une URL.
+    st.query_params["nav"]=(new_route)  # met à jour les paramètres de requête (query params) de l'application
     time.sleep(0.1) 
-    if reload:
-        st.rerun()
+    if reload: #force le rechargement de la page après la redirection.
+        st.rerun() 
