@@ -8,7 +8,7 @@
 This is an overview of opportunities for young graduates in professional/global/LMD & MEEF Masters provided by French universities
 
 Author and editor of the present investigation : French " Ministère de l'Enseignement Supérieur et de la Recherche".
-On the dataset basis provided by Ministère de l'Enseignement Supérieur et de la Recherche, those pages displayed through this streamlit app, help us understand how the French educational system is spread all over French régions ans West Indies and how they all deliver a diploma opening the doors of working world.
+On the dataset basis provided by Ministère de l'Enseignement Supérieur et de la Recherche, those pages displayed through this streamlit app, help us understand how the French educational system is spread all over French regions ans West Indies and how they all deliver a diploma opening the doors of working world.
 
 The analysis pages underline how wide the range of matters and majors is.
 

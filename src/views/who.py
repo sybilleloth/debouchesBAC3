@@ -1,9 +1,4 @@
 import streamlit as st
-import pandas as pd
-from datetime import datetime
-import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
 from PIL import Image
 
 def load_view():    

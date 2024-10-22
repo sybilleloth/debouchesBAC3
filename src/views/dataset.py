@@ -54,7 +54,8 @@ def load_view():
 
 
 #-------Partie 2 - views as to master the dataset
-    st.header("👀	Visualisations facilitant la prise de connaissance des données\n") #téléchargement ici : https://unicode.org/emoji/charts/full-emoji-list.html
+    #téléchargement ici des emojis: https://unicode.org/emoji/charts/full-emoji-list.html
+    st.header("👀	Visualisations facilitant la prise de connaissance des données\n") 
     distribution_effectif(df)
     distribution_effectif_par_annee(df)
     st.subheader("Liens entre les variables du jeu de données\n")

@@ -26,9 +26,14 @@ def load_view():
         # Affichage du texte Markdown dans la deuxième colonne
         # Calcul puis affichage des différentes métriques globales relatives aux données analysées
         metriques(df)
-    st.subheader("La vaste étendue des données du dataset ") 
-    with st.expander("Voir la répartition des lignes de données sur une carte de France") :
+    st.subheader("La vaste étendue des académies enseignantes ") 
+    with st.expander("Voir la répartition des effectifs étudiants sur une carte de France") :
         carte()
+
+    st.subheader("Le top 3 des universités")
+    with st.expander("Voir les universités lauréates") : 
+        afficher_top3_universites(df)
+    
     st.subheader("Le top 3 des diplômes ") 
     with st.expander("Voir les lauréats à travers la période étudiée") :
         # Diviser la page en deux colonnes
@@ -37,7 +42,6 @@ def load_view():
             top3_formation("Libellé du diplôme", "formations","% d'emplois stables parmi les salariés en France","% d'emplois stables parmi les salariés en France",df)
         with col4 : 
             top3_formation("Libellé du diplôme", "formations","Mois après la diplomation","temps nécessaire à la prise de poste en emploi",df)
-    
     
     st.subheader("Le top 3 des régions ") 
     with st.expander("Voir les graphes pour les régions avec les taux de poursuites et les taux d'emploi moyens les plus élevés") : 
@@ -48,17 +52,15 @@ def load_view():
             maxi_region(df)  
     with st.expander("Voir les lauréates par année et par discipline") : 
         timeline(df)
-    with st.expander("Voir les lauréates  des taux d'emplois stables salarié par année") : 
+    with st.expander("Voir les lauréates des taux d'emplois stables salarié par année") : 
         afficher_top3_regions_par_annee_groupée(df) 
     with st.expander("Voir les lauréates  taux d'emploi salarié par année") : 
         afficher_top3_regions_par_annee_groupée_taux_groupe(df)
 
 def metriques(df):
-    # Créer une instance de la classe population
-    pop = population(df)
+    pop = population(df) # Créer une instance de la classe population
     #st.write(dir(pop)) pour checker les attributs et méthodes
-    # Appeler la méthode etablissement
-
+    
     # Calcul des différentes métriques
     df_total_effectifs = pop.region_discipline()
     total_sortants = int(df_total_effectifs["Nombre de sortants"].sum().round(0))
@@ -117,57 +119,57 @@ def appel_video():
         
 def carte():
     st.header("Les marches du podium :")   
-
     # Chargement des données avec coordonnées
     csv_filec = "./data/esr_nettoye_avec_cities 2024_09.csv"
     dfc = pd.read_csv(csv_filec)
 
     # Vérification du chargement des données
     if dfc.empty:
-        st.error("Le fichier CSV est vide ou introuvable.")
+        st.error("problème avec le fichier CSV : vide ou introuvable.")
         return
-
-    # Calcul du nombre moyen de "Libellé du diplôme" par "Académie"
-    moyenne_diplomes_par_academie = dfc.groupby('Académie')['Libellé du diplôme'].nunique().mean().round(2)
-    st.write(f"Nombre moyen de Libellés de diplôme par Académie : {round(moyenne_diplomes_par_academie)}")
-
-    # Calcul du nombre moyen de "Sortants" par "Libellé du diplôme" et par "Académie"
-    moyenne_sortants_par_diplome_academie = dfc.groupby(['Académie', 'Libellé du diplôme'])['Nombre de sortants'].mean().mean().round(2)
+    #appel classe population avec avec dfc pour fonction academie
+    pop = population(dfc)
+    df_academie = pop.academie() #effectifs par académie
     
-    st.write(f"Nombre moyen de Sortants par Libellé du diplôme et par Académie : {round(moyenne_sortants_par_diplome_academie)}")
-
-    # Calculs par académie pour la carte
-    df_academie = dfc.groupby('Académie').agg(
+    # Calculer la latitude et la longitude moyennes pour chaque académie
+    df_academie_coords = dfc.groupby('Académie').agg(
         latitude=('latitude', 'mean'),
-        longitude=('longitude', 'mean'),
-        moyenne_sortants_academie=('Nombre de sortants', 'mean')
+        longitude=('longitude', 'mean')
     ).reset_index()
 
-    # Arrondir la colonne 'moyenne_sortants_academie' à 0 décimale
-    df_academie['moyenne_sortants_academie'] = df_academie['moyenne_sortants_academie'].round(0)
-    
-    # Vérification des coordonnées et suppression des lignes vides
-    df_academie = df_academie.dropna(subset=['latitude', 'longitude'])
+    # Fusionner les données académiques avec les coordonnées
+    df_academie = pd.merge(df_academie, df_academie_coords, on="Académie")
 
+    # check coordonnées et suppression des lignes vides parsécurité mais inutile car déjà fait dans la construction de dfc
+    df_academie = df_academie.dropna(subset=['latitude', 'longitude'])
     if df_academie.empty:
         st.error("Aucune académie avec des coordonnées valides.")
         return
+    
+    # Vérification des données avant de créer la carte dans la vf
+    #st.write("Données de l'académie pour la carte:") # test de validité et complétude des données en raison des diff. d'affichage rencontrées
+    #st.write(df_academie)  # Affiche df pour vérification
+    
+    #calcul des moyennes de sortants et poursuivants par académie
+    df_academie_moyenne = df_academie.groupby('Académie').agg({
+        'latitude': 'mean',  # Moyenne des coordonnées pour chaque académie
+        'longitude': 'mean',
+        'Nombre de sortants': 'mean',  # Moyenne des sortants par académie
+        'Nombre de poursuivants': 'mean'  # Moyenne des poursuivants par académie
+    }).reset_index()
 
-    # Ajout d'une colonne pour le nombre moyen de sortants par libellé du diplôme
-    df_academie['moyenne_sortants_par_diplome_academie'] = dfc.groupby(['Académie', 'Libellé du diplôme'])['Nombre de sortants'].mean().groupby('Académie').mean().round(0).values
-
-    # Vérification des données avant de créer la carte
-    #st.write("Données de l'académie pour la carte:") #v test de validité et complétude des données en raison des diff. d'affichage rencontrées
-    #st.write(df_academie.head())  # Affiche les premières lignes pour vérification
-
+    # Arrondir les moyennes par cohérence
+    df_academie_moyenne['Nombre de sortants'] = df_academie_moyenne['Nombre de sortants'].round(0)
+    df_academie_moyenne['Nombre de poursuivants'] = df_academie_moyenne['Nombre de poursuivants'].round(0)
+    
     # Préparation des données pour la visualisation
-    chart_data = df_academie[['Académie', 'latitude', 'longitude', 'moyenne_sortants_academie', 'moyenne_sortants_par_diplome_academie']].dropna()
+    chart_data = df_academie_moyenne[["Académie", "latitude", "longitude", "Nombre de sortants", "Nombre de poursuivants"]]
 
     if chart_data.empty:
         st.error("Aucune donnée à afficher sur la carte.")
         return
 
-    # Affichage de la carte avec pydeck
+    # Affichage de la carte avec pydeck https://deckgl.readthedocs.io/en/latest/view_state.html
     st.pydeck_chart(
         pdk.Deck(
             map_style='mapbox://styles/mapbox/light-v10',
@@ -176,50 +178,48 @@ def carte():
                 latitude=46.7683,  # Latitude centre de la France Bruyère Allichamp
                 longitude=2.4325,  # Longitude centre de la France Bruyère Allichamp
                 zoom=5,  # Niveau de zoom adapté pour voir tout le pays
-                pitch=50,
+                pitch=50 # test visualisation inclinaison de la carte à 50°,
             ),
-     
+            # les couches pydeck https://deck.gl/docs/api-reference/layers 
+            # Scatterplotlayer pour choix des nuages de points :https://deck.gl/docs/api-reference/layers/scatterplot-layer
             layers=[
                 pdk.Layer(
                     "ScatterplotLayer",
                     data=chart_data,
                     get_position=['longitude', 'latitude'],
-                    get_color=[119, 38, 75, 255],
-                    get_radius="moyenne_sortants_par_diplome_academie * 1000",  # Ajuster le rayon pour mieux voir les points
-                    pickable=True,
+                    get_color=[119, 38, 75, 255],  # AUBERGINE
+                    get_radius="Nombre de sortants",  # Ajuster le rayon pour mieux voir les points
+                    radius_scale=30000,  # Échelle pour ajuster la taille des cercles
+                    pickable=True,  # Pour rendre les cercles interactifs
                 ),
             ],
-            # Affichage d'un point de données sur la carte
+            # Affichage d'un point de données sur la carte et affichage par tooltip sur infobulles 
+            # https://deckgl.readthedocs.io/en/latest/tooltip.html
             tooltip={
-                "html": "<b>Académie:</b> {Académie}<br/><b>Moyenne Sortants par Académie:</b> {moyenne_sortants_academie}<br/><b>Moyenne Sortants par Diplôme par Académie:</b> {moyenne_sortants_par_diplome_academie}",
+                "html": "<b>Académie:</b> {Académie}<br/><b>Nombre moyen de Sortants :</b> {Nombre de sortants}<br/><b>Nombre moyen de Poursuivants:</b> {Nombre de poursuivants}",
                 "style": {"backgroundColor": "steelblue", "color": "white"}
             }
         )
     )
-    
+  
 def top3_formation(criteria, texte1, cible, texte2,df):
     #top3_formation("Libellé du diplôme", "formations","% d'emplois stables parmi les salariés en France","% d'emplois stables parmi les salariés en France")
     #top3_formation("Libellé du diplôme", "formations","Mois après la diplomation","temps nécessaire à la prise de poste en emploi")
     # Affiche les 3 formations avec le taux d'emploi le plus favorable pour chaque type de diplôme.
     
-    
-    st.write(f"Les {texte1} dont le {texte2} est le plus favorable par typologie de diplôme : Licence pro, Master ou MEEF")
+    st.write(f"Les {texte1} dont le {texte2} est le plus favorable par typologie de diplôme")
 
     # Filtrer les données pertinentes
     df_filtered = df[["Type de diplôme", criteria, cible]].dropna()
 
-    if cible == "Taux d'emploi" : 
+    if cible == "% d'emplois stables parmi les salariés en France" : 
         # Compter le nombre de formations avec un taux d'emploi de 100%
-        formations_100 = df_filtered[df_filtered[cible] == 100].shape[0]
+        formations_100 = df_filtered[df_filtered[cible] >97][criteria].nunique()
     else :   
         # Compter le nombre de formations avec une entrée sur le marché du travail de 6 mois
-        formations_100 = df_filtered[df_filtered[cible] == 6].shape[0]
-                
-    print(formations_100)
-
-
-    # Afficher le nombre de formations avec un taux d'emploi de 100% en gras
-    st.markdown(f"**Nombre de {criteria} dont l'indice {texte2} est idéal : {formations_100}**")
+        formations_100 = df_filtered[df_filtered[cible] == 6][criteria].nunique()
+        # Afficher le nombre de formations avec un taux d'emploi de 100% en gras
+        st.markdown(f"**Nombre de -{criteria}- concernés : {formations_100}**")
 
     # Filtrer et trier pour chaque type de diplôme
     diplomes = df["Type de diplôme"].unique().tolist()
@@ -233,9 +233,6 @@ def top3_formation(criteria, texte1, cible, texte2,df):
             top_3_formations = df_diplome.sort_values(by=cible, ascending=False).head(3)
         else : top_3_formations = df_diplome.sort_values(by=cible, ascending=True).head(3)
         top_formations = pd.concat([top_formations, top_3_formations])
-
-    # Vérification des données concaténées
-    st.write("Top formations par diplôme :", top_formations)
 
     # Calculer la valeur minimale et maximale du critère cible
     min_value = top_formations[cible].min()
@@ -556,43 +553,114 @@ def afficher_top3_regions_par_annee_groupée_taux_groupe(df):
     # Afficher le graphique dans Streamlit
     st.plotly_chart(fig)
 
-def afficher_top3_regions(df):
-    # Agréger les données par année, région et calculer la moyenne du % d'emplois stables
-    df_grouped = df.groupby(
-        ["Année(s) d'obtention du diplôme prise(s) en compte", "Région"]
-    ).agg({
-        "% d'emplois stables parmi les salariés en France": 'mean'
-    }).reset_index()
+def afficher_top3_universites(df):
+    
+    st.markdown("### Classement des Etablissements d'enseignement")
+    
+    # Créer une instance de la classe population
+    pop = population(df)
 
-    # Trier les données par année et par % d'emplois stables de façon décroissante
-    df_sorted = df_grouped.sort_values(
-        by=["Année(s) d'obtention du diplôme prise(s) en compte", "% d'emplois stables parmi les salariés en France"],
-        ascending=[True, False]
+    # Appeler la méthode etablissement pour obtenir les données des établissements
+    df_etablissement = pop.etablissement()
+    
+    # Ajouter un sélecteur pour choisir le type de classement
+    option_classement = st.selectbox(
+        "Choisissez un critère de classement:",
+        ("Total Sortants + Poursuivants", "Nombre moyen de diplômés par formation")
     )
 
-    # Sélectionner les 3 premières régions pour chaque année
-    df_top3 = df_sorted.groupby("Année(s) d'obtention du diplôme prise(s) en compte").head(3)
+    if option_classement == "Total Sortants + Poursuivants":
+        # Calcul du total des sortants + poursuivants par établissement et année
+        df_grouped = df_etablissement.groupby(["Etablissement", "Année_groupée"]).agg({
+            'Nombre de poursuivants': 'sum',
+            'Nombre de sortants': 'sum'
+        }).reset_index()
 
-    # Afficher les résultats en tableau pour vérification
-    st.write("Top 3 des régions par année avec le % d'emplois stables le plus élevé:")
-    st.write(df_top3)
+        # Ajouter une colonne pour le total annuel (sortants + poursuivants)
+        df_grouped['Total Sortants + Poursuivants'] = df_grouped['Nombre de poursuivants'] + df_grouped['Nombre de sortants']
 
-    # Créer une visualisation avec Plotly
-    fig = px.bar(
-        df_top3,
-        x="Année(s) d'obtention du diplôme prise(s) en compte",
-        y="% d'emplois stables parmi les salariés en France",
-        color="Région",  # Chaque région sera représentée par une couleur différente
-        barmode="group",  # Les barres seront regroupées par année
-        title="Top 3 des régions avec le % d'emplois stables le plus élevé par année",
-        labels={
-            "% d'emplois stables parmi les salariés en France": "% d'emplois stables",
-            "Année(s) d'obtention du diplôme prise(s) en compte": "Année(s) d'obtention du diplôme"
-        },
-        height=600
-    )
+        # Calculer l'effectif moyen annuel pour chaque établissement
+        df_mean = df_grouped.groupby('Etablissement').agg({
+            'Total Sortants + Poursuivants': 'mean'
+        }).round(0).reset_index()
 
-    # Afficher le graphique dans Streamlit
+        # Calculer la moyenne nationale
+        moyenne_nationale = df_mean['Total Sortants + Poursuivants'].mean()
+
+        # Trier par ordre décroissant du total moyen annuel et prendre les 3 premiers
+        df_mean = df_mean.sort_values(by='Total Sortants + Poursuivants', ascending=False).head(3)
+
+        # Créer une visualisation
+        fig = px.scatter(df_mean, 
+                         y='Total Sortants + Poursuivants', 
+                         x='Etablissement', 
+                         size='Total Sortants + Poursuivants', 
+                         color='Total Sortants + Poursuivants',
+                         hover_name='Etablissement',
+                         labels={
+                             'Total Sortants + Poursuivants': "Effectif moyen annuel",
+                             'Etablissement': "Établissement"
+                         },
+                         color_continuous_scale=[
+                             "rgb(0, 43, 51)",  # Tonalité plus foncée de RVB (0, 107, 128)
+                             "rgb(0, 107, 128)",  # RVB (0, 107, 128)
+                             "rgb(179, 229, 238)"  # Tonalité plus claire de RVB (0, 107, 128)
+                         ])
+
+        # Ajouter la ligne de la moyenne nationale
+        fig.add_hline(y=moyenne_nationale, line_dash="dash", 
+                      annotation_text=f"Moyenne nationale ({moyenne_nationale:.0f})", 
+                      annotation_position="top right", 
+                      line_color="red")
+
+    elif option_classement == "Nombre moyen de diplômés par formation":
+        # Calcul du nombre moyen de diplômés (entrants + sortants) par libellé de formation
+        df_grouped_formation = df_etablissement.groupby(["Etablissement", "Libellé du diplôme"]).agg({
+            'Nombre de sortants': 'mean',
+            'Nombre de poursuivants': 'mean'
+        }).reset_index()
+
+        # Ajouter une colonne pour le total moyen des diplômés (entrants + sortants)
+        df_grouped_formation['Total Diplômés Moyens'] = df_grouped_formation['Nombre de sortants'] + df_grouped_formation['Nombre de poursuivants']
+
+        # Calculer l'effectif moyen annuel pour chaque établissement par formation
+        df_mean_formation = df_grouped_formation.groupby('Etablissement').agg({
+            'Total Diplômés Moyens': 'mean'
+        }).round(0).reset_index()
+
+        # Calculer la moyenne nationale pour le total des diplômés moyens
+        moyenne_nationale_formation = df_mean_formation['Total Diplômés Moyens'].mean()
+
+        # Trier par ordre décroissant du nombre moyen de diplômés et prendre les 3 premiers
+        df_mean_formation = df_mean_formation.sort_values(by='Total Diplômés Moyens', ascending=False).head(3)
+
+        # Créer une visualisation
+        fig = px.scatter(df_mean_formation, 
+                         y='Total Diplômés Moyens', 
+                         x='Etablissement', 
+                         size='Total Diplômés Moyens', 
+                         color='Total Diplômés Moyens',
+                         hover_name='Etablissement',
+                         labels={
+                             'Total Diplômés Moyens': "Moyenne des diplômés (Entrants + Sortants)",
+                             'Etablissement': "Établissement"
+                         },
+                         color_continuous_scale=[
+                             "rgb(51, 0, 51)",  # Tonalité plus foncée de violet
+                             "rgb(153, 0, 153)",  # Tonalité de violet moyen
+                             "rgb(255, 179, 255)"  # Tonalité plus claire de violet
+                         ])
+
+        # Ajouter la ligne de la moyenne nationale
+        fig.add_hline(y=moyenne_nationale_formation, line_dash="dash", 
+                      annotation_text=f"Moyenne nationale ({moyenne_nationale_formation:.0f})", 
+                      annotation_position="top right", 
+                      line_color="red")
+
+    # Mettre à jour la disposition pour améliorer l'affichage
+    fig.update_traces(marker=dict(line=dict(width=1, color='DarkSlateGrey')), selector=dict(mode='markers'))
+
+    # Afficher la figure dans Streamlit
     st.plotly_chart(fig)
 
 # Exécution de la fonction principale

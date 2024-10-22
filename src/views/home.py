@@ -1,5 +1,4 @@
 import streamlit as st
-from src.router import redirect
 from src.views.textcall import Textdisplay
 
 import base64

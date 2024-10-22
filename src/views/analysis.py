@@ -2,8 +2,6 @@ import streamlit as st
 import pandas as pd
 
 # visualisation 
-import plotly.express as px
-#import random as rnd
 import seaborn as sns
 import matplotlib.pyplot as plt
 import plotly.graph_objects as go
@@ -15,6 +13,7 @@ sys.path.append('./src/views')
 from population import population
 
 # Définition de la fonction de chargement des données et de visualisation principale
+
 def load_view():
     
     # Chargement des données
@@ -39,7 +38,8 @@ def load_view():
     with col4:
         viz_ranking_region(df)
     viz_employ_rate_diploma_grouped(df)
-    viz_rank_university(df)
+    #viz_rank_university(df)
+    
     viz_rank_university_avge(df)
     visualisation(df)
 
@@ -217,7 +217,6 @@ def viz_ranking_speciality(df):
     # Afficher le graphique dans Streamlit
     st.plotly_chart(fig)
 
-
 def viz_map_ranking(df):
     # Remplacer les NaN dans "Nombre de poursuivants" et "Nombre de sortants" par 0
     df['Nombre de poursuivants'].fillna(0, inplace=True)
@@ -291,7 +290,6 @@ def viz_ranking_region(df):
     # Afficher le graphique dans Streamlit
     st.plotly_chart(fig)
 
-
 def viz_rank_university(df): 
     st.markdown("### Classement des Etablissements d'enseignement en fonction du nombre moyen de Sortants et Poursuivants par année")
     
@@ -351,8 +349,6 @@ def viz_rank_university(df):
     # Afficher la figure dans Streamlit
     st.plotly_chart(fig)
 
-
-
 def viz_employ_rate_diploma_grouped(df):
     st.markdown("### Taux d'emploi salarié en France moyen par libellé du diplôme")
 
@@ -362,7 +358,7 @@ def viz_employ_rate_diploma_grouped(df):
     # Créer des tranches de taux d'emploi
     bins = [0, 20, 40, 60, 80, 100]
     labels = ['0-20%', '20-40%', '40-60%', '60-80%', '80-100%']
-    taux_emploi_moyen['Tranche'] = pd.cut(taux_emploi_moyen['Taux d\'emploi salarié en France'], bins=bins, labels=labels, right=False)
+    taux_emploi_moyen['Tranche'] = pd.cut(taux_emploi_moyen["Taux d'emploi salarié en France"], bins=bins, labels=labels, right=False)
     
     # Compter le nombre de libellés de diplôme dans chaque tranche
     tranche_count = taux_emploi_moyen['Tranche'].value_counts().sort_index()

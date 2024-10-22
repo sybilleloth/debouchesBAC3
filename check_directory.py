@@ -12,7 +12,7 @@ cursor = conn.cursor()
 
 # Récupération de la liste des tables
 cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
-tables = cursor.fetchall()
+tables = cursor.fetchall() # renvoie le résultat de la requête sous forme d'une liste de tuples
 
 # Parcours des tables et affichage des données sous forme de DataFrame
 for table in tables:
@@ -28,9 +28,6 @@ for table in tables:
 
 # Fermeture de la connexion
 #conn.close()
-
-
-
 
 #infos completes
 
@@ -70,5 +67,3 @@ conn.close()
 
 # Afficher le DataFrame final
 print(final_df)
-
-

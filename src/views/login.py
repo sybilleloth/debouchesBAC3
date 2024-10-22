@@ -5,6 +5,7 @@ from src.controllers.signup import signup
 from src.router import redirect
 import base64
 
+
 def password_valid(password):
     if (len(password) >= 8 and 
         re.search(r"[A-Z]", password) and 
@@ -29,17 +30,19 @@ def load_view():
     """
     st.markdown(video_html, unsafe_allow_html=True)
    
-        
     st.title("Veuillez vous identifier pour accéder aux pages de l'analyse")
+    # obligation d'acceptation de la part de l'utilisateur du stockage des données
     agree = st.checkbox(
         "Je donne mon accord pour entrer mon adresse mel me permettant d'accéder aux fonctionnalités de l'application. "
         "Cette adresse permet de vérifier que vous êtes un humain et ne sera utilisée à aucune autre fin que celle de l'accès à l'application."
 )
+    #obligation d'accepter en cochant la case sinon message d'explication
     if agree : 
         st.write('Parfait !')
     else : st.write('Cette application, pour des raisons de sécurité, ne peut être accessible sans coordonnées mail')
     email = st.text_input('Email', '')
     password = st.text_input('Mot de passe', '', type='password')
+    
     st.write("Que souhaitez-vous faire ?")
     col1, col2 = st.columns([1, 1], gap="small")
     with col1:
@@ -56,7 +59,7 @@ def load_view():
         else:
             res = auth(email, password)
             if not res:
-                st.error("Erreur d'adresse mail ou de mot de passe")
+                st.error("Erreur d'adresse mail ou de mot de passe ou bien manque de consentement")
             else:
                 st.success("Connexion en cours")
                 redirect("home", reload=True)
