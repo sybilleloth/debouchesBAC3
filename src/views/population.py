@@ -200,3 +200,25 @@ class population:
         df_region_discipline.drop(columns=['Mois après la diplomation'], inplace=True)
 
         return df_region_discipline
+
+    def type_diplome(self):
+        # Générer la colonne 'Année_groupée'
+        self.group_annee()
+
+        # Grouper par 'Type de diplome' et 'Année_groupée'
+        df_type_diplome = self.df.groupby(
+            ["Type de diplôme", "Année_groupée"]
+        ).agg({
+            'Nombre de sortants': 'sum',
+            'Nombre de poursuivants': 'sum',
+            'Mois après la diplomation': 'nunique'
+        }).reset_index()
+
+        # Diviser le nombre de sortants et poursuivants par le nombre de mois uniques
+        df_type_diplome['Nombre de sortants'] = df_type_diplome['Nombre de sortants'] / df_type_diplome['Mois après la diplomation']
+        df_type_diplome['Nombre de poursuivants'] = df_type_diplome['Nombre de poursuivants'] / df_type_diplome['Mois après la diplomation']
+
+        # Supprimer la colonne "Mois après la diplomation"
+        df_type_diplome.drop(columns=['Mois après la diplomation'], inplace=True)
+
+        return df_type_diplome
