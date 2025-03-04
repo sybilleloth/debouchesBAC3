@@ -44,7 +44,7 @@ def load_view():
             top3_formation("Libellé du diplôme", "formations","Mois après la diplomation","temps nécessaire à la prise de poste en emploi",df)
     
     st.subheader("Le top 3 des régions ") 
-    with st.expander("Voir les graphes pour les régions avec les taux de poursuites et les taux d'emploi moyens les plus élevés") : 
+    with st.expander("Voir les graphes pour les régions avec les taux de poursuite et les taux d'emploi moyens les plus élevés") : 
         col5, col6 = st.columns(2)
         with col5 :
             maxi_poursuite(df)  

@@ -25,16 +25,18 @@ class Session:
         res = db.execute(query, (self.hash(), self.email))  # utilisation des paramètres
         row = res.fetchone() #ajout code gestion de l'exception si utilisateur non trouvé
         if row : 
-            return[0]
+            return row[0] # retourne le UID tel qu'il existe
         else : 
             return None
 
     def login(self):
-        if self.exist():
+        uid = self.getUID()  # Récupère l'UID réel
+    
+        if uid is not None:
             db = Database()
             query = "INSERT INTO logs (uid, action, value) VALUES (?, ?, ?)" # insertion dans les logs string avec placeholders
             db.execute(f"INSERT INTO logs (uid, action, value) VALUES ( {self.getUID()} , \"logged\", '{int(time.time())}')")
-            db.execute(query, (self.getUID(), "logged", int(time.time())))  # utilisation des paramètres
+            db.execute(query, (self.getUID(), "logged", int(time.time())))  # utilisation des paramètres sécurisés
             db.commit()
             self.logged = True
         else:

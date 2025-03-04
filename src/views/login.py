@@ -7,7 +7,7 @@ import base64
 
 
 def password_valid(password):
-    if (len(password) >= 8 and 
+    if (len(password) >= 12 and 
         re.search(r"[A-Z]", password) and 
         re.search(r"[a-z]", password) and 
         re.search(r"\d", password) and 
@@ -52,10 +52,11 @@ def load_view():
 
     if log_in_button:
         if not password_valid(password):
-            st.error("""Votre mot de passe doit comporter un minimum de 8 caractères
+            st.error("""Votre mot de passe doit comporter un minimum de 12 caractères
                       dont au moins un caractère spécial, 
                       un chiffre, 
-                      une lettre minuscule et une lettre majuscule.""")
+                      une lettre minuscule et une lettre majuscule,
+                      ne pas comprendre de mots ni suite de chiffres ou de lettres ni information personnelle.""")
         else:
             res = auth(email, password)
             if not res:
@@ -66,10 +67,11 @@ def load_view():
     
     elif sign_up_button:
         if not password_valid(password):
-            st.error("""Votre mot de passe doit comporter un minimum de 8 caractères
+            st.error("""Votre mot de passe doit comporter un minimum de 12 caractères
                       dont au moins un caractère spécial, 
                       un chiffre, 
-                      une lettre minuscule et une lettre majuscule.""")
+                      une lettre minuscule et une lettre majuscule,
+                      ne pas comprendre de mots ni suite de chiffres ou de lettres ni information personnelle.""")
         else:
             res = signup(email, password)
             if not res:
