@@ -29,6 +29,7 @@ class Session:
         else : 
             return None
 
+    # conservation de la trace de connexion de l'utilisateur et l'enregistre dans la table logs
     def login(self):
         uid = self.getUID()  # Récupère l'UID réel
     
@@ -55,8 +56,9 @@ class Session:
             return False
 
     def persist(self):
+        """ sauvegarde email dans le fichier JSON session.json"""
         data = {
-                "email" : self.email
+                "email" : self.email #stockage de l'email du user en ligne
         }
-        with open("session.json", 'w') as outfile:
-            json.dump(data, outfile)
+        with open("session.json", 'w') as outfile: #ouvre le fichier en mode write
+            json.dump(data, outfile) #écrit l'objet json  dans le fichier
