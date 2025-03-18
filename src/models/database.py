@@ -9,7 +9,10 @@ class Database :
         Initialise la connexion à la base de données SQLite.
         """
         try:
-            self.connection = sqlite3.connect("project.db")  # appel de la base de données
+            #self.connection = sqlite3.connect("project.db")  # appel de la base de données
+            self.connection = sqlite3.connect("project.db", check_same_thread=False)  # 🔥 Ajout de check_same_thread=False
+            self.connection.row_factory = sqlite3.Row  # Facultatif : pour récupérer les résultats sous forme de dictionnaire
+            print("✅ Connexion SQLite établie avec support multi-thread")
         except sqlite3.Error as e:
             print(f"Erreur lors de la connexion à la base de données : {e}")
             raise
@@ -48,6 +51,23 @@ class Database :
         except sqlite3.Error as e:
             print(f"Erreur lors de l'exécution de la requête : {e}")
             raise
+    
+    def fetch_one(self, query, params=None):
+        """
+        Exécute une requête SQL et retourne une seule ligne.
+        :param query: Requête SQL avec placeholders (?).
+        :param params: Tuple ou liste contenant les paramètres.
+        :return: Une seule ligne sous forme de tuple, ou (0,) si aucun résultat.
+        """
+        try:
+            cursor = self.execute(query, params)
+            result = cursor.fetchone()
+            print(f"🔎 fetch_one Résultat: {result}")  # Debugging
+            return result 
+        
+        except sqlite3.Error as e:
+            print(f"❌ Erreur dans fetch_one : {e}")
+            return None
 
     def commit(self):
         """
