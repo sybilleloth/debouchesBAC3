@@ -4,10 +4,12 @@ NAVBAR_PATHS = {
     'JEU DE DONNEES': 'dataset',
     'ANALYSE': 'analysis',
     'CONCLUSION': 'conclusion',
+    'QUI SUIS-JE?': 'who'
 }
 
 SETTINGS = {
-    'OPTIONS':'/options',
+    'MERCI':'/thanks',  
+    'GERER LE CACHE' : '/managecache',
     'DECONNEXION':'/logout'
 }
  
